@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VillageWars – Labuissière</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --rouge: #ef4444; --bleu: #3b82f6;
+    --bg: #0c1220; --card: #131d30; --border: rgba(255,255,255,0.08);
+    --text: #e2e8f0; --muted: #64748b;
+    --gold: #f59e0b; --green: #10b981;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; overflow: hidden; }
+  #app { display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
+
+  /* SCREENS */
+  .screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
+  .screen.active { display: flex; }
+
+  /* SPLASH */
+  #splash {
+    background: linear-gradient(160deg, #0c1220 0%, #0d2137 50%, #0c1220 100%);
+    align-items: center; justify-content: center; text-align: center; padding: 2rem; gap: 0.6rem;
+  }
+  #splash .logo { font-size: 4.5rem; animation: pop 0.6s ease; }
+  #splash h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3.2rem; letter-spacing: 2px; line-height: 1; }
+  #splash h1 span { color: #3b82f6; }
+  #splash .village-name { font-size: 0.85rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.5rem; }
+  #splash .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0 1rem; }
+  #splash .tag { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 20px; padding: 0.25rem 0.8rem; font-size: 0.75rem; color: #93c5fd; }
+  .btn-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; border: none; border-radius: 16px; padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 900; cursor: pointer; font-family: 'Nunito', sans-serif; letter-spacing: 1px; box-shadow: 0 8px 24px rgba(59,130,246,0.35); transition: transform 0.15s, box-shadow 0.15s; }
+  .btn-primary:active { transform: scale(0.96); box-shadow: none; }
+  .btn-ghost { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; font-family: 'Nunito', sans-serif; padding: 0.5rem; }
+
+  /* TEAM SELECT */
+  #team { align-items: center; justify-content: center; padding: 2rem; gap: 1rem; background: var(--bg); }
+  #team h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; }
+  #team p { color: var(--muted); font-size: 0.88rem; text-align: center; }
+  .team-cards { display: flex; gap: 1rem; margin: 0.5rem 0; }
+  .team-card { flex: 1; background: rgba(255,255,255,0.04); border: 2px solid var(--border); border-radius: 20px; padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .team-card.selected-rouge { background: rgba(239,68,68,0.15); border-color: var(--rouge); box-shadow: 0 6px 20px rgba(239,68,68,0.3); transform: scale(1.04); }
+  .team-card.selected-bleu { background: rgba(59,130,246,0.15); border-color: var(--bleu); box-shadow: 0 6px 20px rgba(59,130,246,0.3); transform: scale(1.04); }
+  .team-card .emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .team-card .name { font-weight: 900; font-size: 1rem; }
+
+  /* MAP SCREEN */
+  #map-screen { position: relative; overflow: hidden; }
+  #header { padding: 0.7rem 1rem 0.4rem; display: flex; justify-content: space-between; align-items: center; background: var(--card); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  #header .game-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; }
+  #header .game-title span { color: var(--bleu); }
+  #header .timer-box { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 0.25rem 0.7rem; font-weight: 900; font-size: 1.1rem; color: var(--gold); }
+  #scores-bar { display: flex; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--card); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .score-chip { flex: 1; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 10px; padding: 0.35rem 0.7rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
+  .score-chip.my-team-rouge { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); }
+  .score-chip.my-team-bleu { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.4); }
+  .score-val { font-weight: 900; font-size: 1rem; }
+  #map { flex: 1; z-index: 1; }
+  .leaflet-container { background: #1a2e1a !important; }
+
+  /* ZONE PANEL */
+  #zone-panel { background: var(--card); border-top: 1px solid var(--border); padding: 0.8rem 1rem; flex-shrink: 0; display: none; }
+  #zone-panel.visible { display: block; }
+  .zone-header { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem; }
+  .zone-emoji-big { font-size: 2rem; }
+  .zone-title { font-weight: 900; font-size: 1rem; }
+  .zone-pts { font-size: 0.75rem; color: var(--gold); }
+  .zone-status { font-size: 0.75rem; font-weight: 700; margin-left: auto; }
+  .challenge-btns { display: flex; gap: 0.5rem; }
+  .challenge-btn { flex: 1; border: 1.5px solid; border-radius: 10px; padding: 0.5rem 0.2rem; font-size: 0.7rem; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; background: transparent; transition: all 0.15s; }
+  .challenge-btn:active { transform: scale(0.96); }
+  .challenge-btn.photo { border-color: rgba(245,158,11,0.5); color: var(--gold); }
+  .challenge-btn.photo:hover { background: rgba(245,158,11,0.1); }
+  .challenge-btn.quiz { border-color: rgba(59,130,246,0.5); color: var(--bleu); }
+  .challenge-btn.quiz:hover { background: rgba(59,130,246,0.1); }
+  .challenge-btn.action { border-color: rgba(16,185,129,0.5); color: var(--green); }
+  .challenge-btn.action:hover { background: rgba(16,185,129,0.1); }
+
+  /* BOTTOM NAV */
+  #bottom-nav { display: flex; border-top: 1px solid var(--border); background: var(--card); flex-shrink: 0; }
+  .nav-btn { flex: 1; background: none; border: none; color: var(--muted); padding: 0.6rem 0.5rem; cursor: pointer; font-size: 0.72rem; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: color 0.15s; }
+  .nav-btn .nav-icon { font-size: 1.2rem; }
+  .nav-btn.active { color: var(--bleu); }
+
+  /* CHALLENGE SCREEN */
+  #challenge-screen { align-items: center; justify-content: center; padding: 2rem; background: var(--bg); text-align: center; gap: 0.8rem; }
+  #challenge-screen .zone-big { font-size: 4rem; }
+  #challenge-screen .zone-label { font-size: 1rem; color: var(--muted); font-weight: 700; }
+  #challenge-screen .challenge-badge { border-radius: 12px; padding: 0.35rem 1rem; font-weight: 800; font-size: 0.88rem; border: 2px solid; }
+  #challenge-screen .task-box { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; max-width: 340px; font-size: 1.05rem; line-height: 1.6; }
+  .challenge-actions { display: flex; gap: 0.8rem; margin-top: 0.5rem; }
+  .btn-success { background: var(--green); color: white; border: none; border-radius: 14px; padding: 0.9rem 1.8rem; font-weight: 900; cursor: pointer; font-size: 1rem; font-family: 'Nunito', sans-serif; box-shadow: 0 4px 16px rgba(16,185,129,0.35); }
+  .btn-cancel { background: rgba(255,255,255,0.07); color: var(--muted); border: none; border-radius: 14px; padding: 0.9rem 1.2rem; cursor: pointer; font-size: 0.9rem; font-family: 'Nunito', sans-serif; }
+
+  /* SCORES SCREEN */
+  #scores-screen { padding: 1.2rem; background: var(--bg); gap: 0.8rem; }
+  #scores-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; }
+  .score-team-card { border-radius: 20px; padding: 1.2rem; border: 2px solid; }
+  .score-team-card.rouge { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
+  .score-team-card.bleu { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); }
+  .score-team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+  .score-team-name { font-weight: 900; font-size: 1.1rem; }
+  .score-team-total { font-weight: 900; font-size: 1.6rem; }
+  .score-zone-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 0.2rem 0; border-top: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; }
+  .no-zones { color: var(--muted); font-size: 0.85rem; }
+  .free-zones-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
+  .free-zones-title { color: var(--muted); font-size: 0.83rem; margin-bottom: 0.5rem; }
+
+  /* RULES SCREEN */
+  #rules-screen { padding: 1.2rem; background: var(--bg); gap: 0.8rem; }
+  #rules-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; }
+  .rule-card { display: flex; gap: 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
+  .rule-icon { font-size: 1.8rem; flex-shrink: 0; }
+  .rule-title { font-weight: 900; margin-bottom: 0.2rem; }
+  .rule-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+  .challenge-types { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 16px; padding: 1rem; }
+  .challenge-type-title { font-weight: 800; color: #93c5fd; margin-bottom: 0.6rem; font-size: 0.9rem; }
+  .challenge-type-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; font-size: 0.85rem; color: #cbd5e1; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* NOTIFICATION */
+  #notif { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--green); color: white; border-radius: 14px; padding: 0.7rem 1.4rem; font-weight: 800; font-size: 0.9rem; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 9999; white-space: nowrap; transition: transform 0.3s ease; pointer-events: none; }
+  #notif.show { transform: translateX(-50%) translateY(0); }
+
+  /* Custom marker */
+  .zone-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+  .zone-marker .icon-circle { width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: rgba(30,50,80,0.85); backdrop-filter: blur(4px); box-shadow: 0 3px 12px rgba(0,0,0,0.5); transition: all 0.2s; }
+  .zone-marker .icon-label { font-size: 0.58rem; font-weight: 800; background: rgba(0,0,0,0.75); border-radius: 6px; padding: 1px 5px; margin-top: 2px; white-space: nowrap; max-width: 70px; overflow: hidden; text-overflow: ellipsis; color: #cbd5e1; }
+  .zone-marker.team-rouge .icon-circle { background: rgba(239,68,68,0.8); border-color: #ef4444; box-shadow: 0 3px 16px rgba(239,68,68,0.5); }
+  .zone-marker.team-bleu .icon-circle { background: rgba(59,130,246,0.8); border-color: #3b82f6; box-shadow: 0 3px 16px rgba(59,130,246,0.5); }
+
+  @keyframes pop { 0%{transform:scale(0.6);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1} }
+  @keyframes slideUp { from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1} }
+  @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.3)} }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- SPLASH -->
+  <div id="splash" class="screen active">
+    <div class="logo">🗺️</div>
+    <h1>VILLAGE<span>WARS</span></h1>
+    <div class="village-name">⚡ Labuissière · Belgique</div>
+    <div class="tags">
+      <span class="tag">🏃 Exploration</span>
+      <span class="tag">📸 Défis</span>
+      <span class="tag">⚔️ Conquête</span>
+    </div>
+    <button class="btn-primary" onclick="showScreen('team')">JOUER →</button>
+    <p style="color:var(--muted);font-size:0.75rem;margin-top:0.5rem">2–8 joueurs · Plein air · 1 heure</p>
+  </div>
+
+  <!-- TEAM SELECT -->
+  <div id="team" class="screen">
+    <h2>Choisis ton équipe</h2>
+    <p>Chaque joueur choisit son camp sur son téléphone</p>
+    <div class="team-cards">
+      <div class="team-card" id="card-rouge" onclick="selectTeam('rouge')">
+        <div class="emoji">🔴</div>
+        <div class="name">Équipe Rouge</div>
+      </div>
+      <div class="team-card" id="card-bleu" onclick="selectTeam('bleu')">
+        <div class="emoji">🔵</div>
+        <div class="name">Équipe Bleue</div>
+      </div>
+    </div>
+    <button class="btn-primary" id="start-btn" style="display:none" onclick="startGame()">C'est parti ! 🚀</button>
+    <button class="btn-ghost" onclick="showScreen('splash')">← Retour</button>
+  </div>
+
+  <!-- MAP SCREEN -->
+  <div id="map-screen" class="screen">
+    <div id="header">
+      <div>
+        <div class="game-title">🗺️ VILLAGE<span>WARS</span></div>
+        <div style="font-size:0.72rem;color:var(--muted)" id="my-team-label"></div>
+      </div>
+      <div class="timer-box" id="timer">⏱ 60:00</div>
+    </div>
+    <div id="scores-bar">
+      <div class="score-chip" id="chip-rouge">
+        <span>🔴 Rouge</span><span class="score-val" id="score-rouge" style="color:var(--rouge)">0</span>
+      </div>
+      <div class="score-chip" id="chip-bleu">
+        <span>🔵 Bleu</span><span class="score-val" id="score-bleu" style="color:var(--bleu)">0</span>
+      </div>
+    </div>
+    <div id="map"></div>
+    <div id="zone-panel">
+      <div class="zone-header">
+        <div class="zone-emoji-big" id="panel-emoji"></div>
+        <div>
+          <div class="zone-title" id="panel-name"></div>
+          <div class="zone-pts" id="panel-pts"></div>
+        </div>
+        <div class="zone-status" id="panel-status"></div>
+      </div>
+      <div class="challenge-btns">
+        <button class="challenge-btn photo" onclick="startChallenge('photo')">📸<br>Photo</button>
+        <button class="challenge-btn quiz" onclick="startChallenge('quiz')">🧠<br>Quiz</button>
+        <button class="challenge-btn action" onclick="startChallenge('action')">⚡<br>Action</button>
+      </div>
+    </div>
+    <div id="bottom-nav">
+      <button class="nav-btn active" onclick="showMapScreen()"><span class="nav-icon">🗺️</span>Carte</button>
+      <button class="nav-btn" onclick="showScreen('scores-screen')"><span class="nav-icon">🏆</span>Scores</button>
+      <button class="nav-btn" onclick="showScreen('rules-screen')"><span class="nav-icon">📖</span>Règles</button>
+    </div>
+  </div>
+
+  <!-- CHALLENGE SCREEN -->
+  <div id="challenge-screen" class="screen">
+    <div class="zone-big" id="ch-emoji"></div>
+    <div class="zone-label" id="ch-zone-name"></div>
+    <div class="challenge-badge" id="ch-badge"></div>
+    <div class="task-box" id="ch-task"></div>
+    <div class="challenge-actions">
+      <button class="btn-success" id="ch-success-btn" onclick="captureZone()">✅ Défi réussi !</button>
+      <button class="btn-cancel" onclick="showMapScreen()">Annuler</button>
+    </div>
+  </div>
+
+  <!-- SCORES SCREEN -->
+  <div id="scores-screen" class="screen">
+    <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
+    <h2>🏆 Scores</h2>
+    <div class="score-team-card rouge">
+      <div class="score-team-header">
+        <span class="score-team-name">🔴 Équipe Rouge</span>
+        <span class="score-team-total" style="color:var(--rouge)" id="total-rouge">0 pts</span>
+      </div>
+      <div id="zones-rouge"><div class="no-zones">Aucune zone capturée</div></div>
+    </div>
+    <div class="score-team-card bleu">
+      <div class="score-team-header">
+        <span class="score-team-name">🔵 Équipe Bleue</span>
+        <span class="score-team-total" style="color:var(--bleu)" id="total-bleu">0 pts</span>
+      </div>
+      <div id="zones-bleu"><div class="no-zones">Aucune zone capturée</div></div>
+    </div>
+    <div class="free-zones-card">
+      <div class="free-zones-title">Zones non capturées</div>
+      <div id="zones-free"></div>
+    </div>
+  </div>
+
+  <!-- RULES SCREEN -->
+  <div id="rules-screen" class="screen">
+    <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
+    <h2>📖 Règles du jeu</h2>
+    <div class="rule-card"><div class="rule-icon">🗺️</div><div><div class="rule-title">La Carte</div><div class="rule-desc">10 zones sont placées dans Labuissière. Chaque zone rapporte entre 100 et 300 points.</div></div></div>
+    <div class="rule-card"><div class="rule-icon">📍</div><div><div class="rule-title">Se déplacer</div><div class="rule-desc">Rendez-vous physiquement près d'une zone pour l'activer. Utilisez la vraie carte du village !</div></div></div>
+    <div class="rule-card"><div class="rule-icon">⚡</div><div><div class="rule-title">Relever le défi</div><div class="rule-desc">Chaque zone a un défi : photo, quiz ou action. Réussissez-le pour capturer la zone !</div></div></div>
+    <div class="rule-card"><div class="rule-icon">⚔️</div><div><div class="rule-title">Contre-attaque</div><div class="rule-desc">Une zone ennemie peut être reprise en relevant un nouveau défi sur place.</div></div></div>
+    <div class="rule-card"><div class="rule-icon">🏆</div><div><div class="rule-title">Victoire</div><div class="rule-desc">Après 1 heure, l'équipe avec le plus de points gagne. Bonne chance !</div></div></div>
+    <div class="challenge-types">
+      <div class="challenge-type-title">Types de défis</div>
+      <div class="challenge-type-row"><div class="dot" style="background:var(--gold)"></div>📸 Photo — créativité et mise en scène</div>
+      <div class="challenge-type-row"><div class="dot" style="background:var(--bleu)"></div>🧠 Quiz — questions sur Labuissière</div>
+      <div class="challenge-type-row"><div class="dot" style="background:var(--green)"></div>⚡ Action — défi physique ou amusant</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NOTIFICATION -->
+<div id="notif"></div>
+
+<script>
+// ============================================================
+// DONNÉES DU JEU — Labuissière, Belgique
+// ============================================================
+const ZONES = [
+  { id:1, name:"L'Église Saint-Martin", emoji:"⛪", lat:50.3362, lng:4.2201, points:250, challenge:"quiz",
+    tasks: { photo:"Prenez une photo créative de toute l'équipe devant l'église !", quiz:"En quelle année a été construite l'église Saint-Martin de Labuissière ? (Réponse : 1159)", action:"Faites une minute de silence face à l'église puis criez le nom de votre équipe !" }},
+  { id:2, name:"Le Cimetière", emoji:"🪦", lat:50.3358, lng:4.2198, points:150, challenge:"photo",
+    tasks: { photo:"Trouvez la tombe la plus ancienne et photographiez-la sans irrespecter les lieux.", quiz:"Combien de rangées de tombes compte le cimetière ? Estimez le nombre !", action:"Marchez en silence pendant 60 secondes autour du cimetière en équipe." }},
+  { id:3, name:"La Gare de Labuissière", emoji:"🚉", lat:50.3380, lng:4.2230, points:200, challenge:"action",
+    tasks: { photo:"Recréez une photo de 'voyageurs en attente du train' avec toute l'équipe !", quiz:"Combien de voies de chemin de fer compte la gare ? Observez et répondez.", action:"Improvisez une danse de 20 secondes sur le quai et filmez-la !" }},
+  { id:4, name:"La Cité", emoji:"🏘️", lat:50.3372, lng:4.2180, points:180, challenge:"photo",
+    tasks: { photo:"Photographiez le détail architectural le plus original de la cité.", quiz:"Comptez le nombre de maisons dans la rue principale de la cité.", action:"Interviewez un résident de la cité (avec son accord) et filmez 15 secondes !" }},
+  { id:5, name:"L'Écluse", emoji:"⚓", lat:50.3340, lng:4.2210, points:300, challenge:"action",
+    tasks: { photo:"Prenez une photo créative avec l'écluse et la Sambre en arrière-plan.", quiz:"Comment fonctionne une écluse ? Expliquez le principe en 30 secondes en vidéo !", action:"Trouvez 3 objets naturels près de l'écluse et construisez quelque chose !" }},
+  { id:6, name:"Le Kiosque", emoji:"🎪", lat:50.3368, lng:4.2195, points:120, challenge:"action",
+    tasks: { photo:"Prenez la photo la plus créative possible au kiosque avec toute l'équipe !", quiz:"Décrivez l'architecture du kiosque : couleur, matériau, forme du toit.", action:"Chantez une chanson de 30 secondes sous le kiosque et filmez !" }},
+  { id:7, name:"La Sambre", emoji:"🌊", lat:50.3335, lng:4.2215, points:200, challenge:"photo",
+    tasks: { photo:"Prenez une photo de groupe avec un reflet de l'équipe dans l'eau !", quiz:"Quel animal pouvez-vous observer près de la Sambre ? Photographiez-le !", action:"Trouvez le son le plus original au bord de la Sambre et enregistrez-le." }},
+  { id:8, name:"Santé Sourire", emoji:"🦷", lat:50.3375, lng:4.2188, points:150, challenge:"quiz",
+    tasks: { photo:"Prenez une photo de toute l'équipe avec le plus grand sourire possible devant la façade !", quiz:"Quel est le numéro de téléphone affiché sur la façade du cabinet dentaire ?", action:"Chaque membre de l'équipe montre ses dents et l'équipe adverse juge !" }},
+  { id:9, name:"Fleuriste Defossez", emoji:"💐", lat:50.3370, lng:4.2192, points:130, challenge:"photo",
+    tasks: { photo:"Chaque joueur tient une fleur (sans la cueillir !) et posez pour une photo !", quiz:"Quelle est la fleur mise en avant dans la vitrine du fleuriste aujourd'hui ?", action:"Créez un bouquet imaginaire avec des éléments naturels trouvés autour !" }},
+  { id:10, name:"Salle Communale", emoji:"🏛️", lat:50.3365, lng:4.2205, points:220, challenge:"action",
+    tasks: { photo:"Prenez une photo officielle 'style cérémonie' de toute l'équipe devant la salle !", quiz:"Quel événement est affiché sur les panneaux de la salle communale ?", action:"Faites un discours de victoire de 20 secondes devant la salle et filmez !" }},
+];
+
+const CHALLENGES_META = {
+  photo:  { label:"📸 Défi Photo",  color:"#f59e0b", bg:"rgba(245,158,11,0.15)" },
+  quiz:   { label:"🧠 Défi Quiz",   color:"#3b82f6", bg:"rgba(59,130,246,0.15)" },
+  action: { label:"⚡ Défi Action", color:"#10b981", bg:"rgba(16,185,129,0.15)" },
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let selectedTeam = null;
+let zoneStates = {}; // { zoneId: 'rouge'|'bleu'|null }
+let activeZone = null;
+let activeChallenge = null;
+let timerSeconds = 3600;
+let timerInterval = null;
+let map = null;
+let markers = {};
+let gameStarted = false;
+
+ZONES.forEach(z => zoneStates[z.id] = null);
+
+// ============================================================
+// SCREENS
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'scores-screen') refreshScoresScreen();
+}
+
+function showMapScreen() {
+  showScreen('map-screen');
+  document.getElementById('zone-panel').classList.remove('visible');
+  activeZone = null;
+  if (map) setTimeout(() => map.invalidateSize(), 100);
+}
+
+// ============================================================
+// TEAM
+// ============================================================
+function selectTeam(team) {
+  selectedTeam = team;
+  document.getElementById('card-rouge').className = 'team-card' + (team === 'rouge' ? ' selected-rouge' : '');
+  document.getElementById('card-bleu').className = 'team-card' + (team === 'bleu' ? ' selected-bleu' : '');
+  document.getElementById('start-btn').style.display = 'block';
+}
+
+// ============================================================
+// GAME START
+// ============================================================
+function startGame() {
+  showScreen('map-screen');
+  document.getElementById('my-team-label').textContent = selectedTeam === 'rouge' ? '🔴 Équipe Rouge' : '🔵 Équipe Bleue';
+
+  // Highlight my chip
+  const myChip = document.getElementById('chip-' + selectedTeam);
+  myChip.className = 'score-chip my-team-' + selectedTeam;
+
+  if (!gameStarted) {
+    gameStarted = true;
+    initMap();
+    startTimer();
+  }
+}
+
+// ============================================================
+// MAP
+// ============================================================
+function initMap() {
+  map = L.map('map', {
+    center: [50.3362, 4.2205],
+    zoom: 16,
+    zoomControl: true,
+    attributionControl: false
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  ZONES.forEach(zone => {
+    const icon = createMarkerIcon(zone);
+    const marker = L.marker([zone.lat, zone.lng], { icon }).addTo(map);
+    marker.on('click', () => openZonePanel(zone));
+    markers[zone.id] = marker;
+  });
+}
+
+function createMarkerIcon(zone) {
+  const team = zoneStates[zone.id];
+  const teamClass = team ? 'team-' + team : '';
+  const html = `<div class="zone-marker ${teamClass}">
+    <div class="icon-circle">${zone.emoji}</div>
+    <div class="icon-label">${zone.name.split(' ').slice(-1)[0]}</div>
+  </div>`;
+  return L.divIcon({ html, className: '', iconSize: [50, 58], iconAnchor: [25, 29] });
+}
+
+function refreshMarker(zone) {
+  if (markers[zone.id]) {
+    markers[zone.id].setIcon(createMarkerIcon(zone));
+  }
+}
+
+// ============================================================
+// ZONE PANEL
+// ============================================================
+function openZonePanel(zone) {
+  activeZone = zone;
+  const team = zoneStates[zone.id];
+  document.getElementById('panel-emoji').textContent = zone.emoji;
+  document.getElementById('panel-name').textContent = zone.name;
+  document.getElementById('panel-pts').textContent = '⭐ ' + zone.points + ' points';
+
+  let statusText = 'Libre', statusColor = '#64748b';
+  if (team === selectedTeam) { statusText = '✅ Votre zone'; statusColor = '#10b981'; }
+  else if (team) { statusText = '⚔️ Zone ennemie'; statusColor = '#ef4444'; }
+
+  const st = document.getElementById('panel-status');
+  st.textContent = statusText;
+  st.style.color = statusColor;
+
+  document.getElementById('zone-panel').classList.add('visible');
+}
+
+// ============================================================
+// CHALLENGE
+// ============================================================
+function startChallenge(type) {
+  if (!activeZone) return;
+  activeChallenge = type;
+  const meta = CHALLENGES_META[type];
+  const task = activeZone.tasks[type];
+
+  document.getElementById('ch-emoji').textContent = activeZone.emoji;
+  document.getElementById('ch-zone-name').textContent = activeZone.name;
+
+  const badge = document.getElementById('ch-badge');
+  badge.textContent = meta.label;
+  badge.style.color = meta.color;
+  badge.style.background = meta.bg;
+  badge.style.borderColor = meta.color;
+
+  document.getElementById('ch-task').textContent = task;
+  showScreen('challenge-screen');
+}
+
+function captureZone() {
+  if (!activeZone) return;
+  const btn = document.getElementById('ch-success-btn');
+  btn.textContent = '⏳ Capture en cours...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    zoneStates[activeZone.id] = selectedTeam;
+    refreshMarker(activeZone);
+    updateScores();
+    const pts = activeZone.points;
+    showNotif(`✅ ${activeZone.name} capturée ! +${pts} pts`, '#10b981');
+    btn.textContent = '✅ Défi réussi !';
+    btn.disabled = false;
+    showMapScreen();
+  }, 1000);
+}
+
+// ============================================================
+// SCORES
+// ============================================================
+function getScore(team) {
+  return ZONES.filter(z => zoneStates[z.id] === team).reduce((a, z) => a + z.points, 0);
+}
+
+function updateScores() {
+  document.getElementById('score-rouge').textContent = getScore('rouge');
+  document.getElementById('score-bleu').textContent = getScore('bleu');
+}
+
+function refreshScoresScreen() {
+  ['rouge','bleu'].forEach(team => {
+    const captured = ZONES.filter(z => zoneStates[z.id] === team);
+    const score = captured.reduce((a,z) => a+z.points, 0);
+    document.getElementById('total-' + team).textContent = score + ' pts';
+    const container = document.getElementById('zones-' + team);
+    if (captured.length === 0) {
+      container.innerHTML = '<div class="no-zones">Aucune zone capturée</div>';
+    } else {
+      container.innerHTML = captured.map(z =>
+        `<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span style="color:${team==='rouge'?'var(--rouge)':'var(--bleu)'};font-weight:800">+${z.points}</span></div>`
+      ).join('');
+    }
+  });
+  const free = ZONES.filter(z => !zoneStates[z.id]);
+  document.getElementById('zones-free').innerHTML = free.length === 0
+    ? '<div class="no-zones">Toutes les zones sont capturées !</div>'
+    : free.map(z => `<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span>${z.points} pts</span></div>`).join('');
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer() {
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    const m = String(Math.floor(timerSeconds / 60)).padStart(2,'0');
+    const s = String(timerSeconds % 60).padStart(2,'0');
+    document.getElementById('timer').textContent = `⏱ ${m}:${s}`;
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      endGame();
+    }
+  }, 1000);
+}
+
+function endGame() {
+  const rScore = getScore('rouge'), bScore = getScore('bleu');
+  let msg = rScore > bScore ? '🔴 Équipe Rouge gagne !' : bScore > rScore ? '🔵 Équipe Bleue gagne !' : '🤝 Match nul !';
+  showNotif(msg + ` R:${rScore} B:${bScore}`, '#f59e0b');
+}
+
+// ============================================================
+// NOTIFICATION
+// ============================================================
+function showNotif(msg, color = '#10b981') {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.style.background = color;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

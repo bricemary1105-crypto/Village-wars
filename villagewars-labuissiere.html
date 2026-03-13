@@ -8,310 +8,376 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --rouge: #ef4444; --bleu: #3b82f6;
-    --bg: #0c1220; --card: #131d30; --border: rgba(255,255,255,0.08);
-    --text: #e2e8f0; --muted: #64748b;
-    --gold: #f59e0b; --green: #10b981;
-  }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; overflow: hidden; }
-  #app { display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; position: relative; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--rouge:#ef4444;--bleu:#3b82f6;--vert:#22c55e;--bg:#0c1220;--card:#131d30;--border:rgba(255,255,255,0.08);--text:#e2e8f0;--muted:#64748b;--gold:#f59e0b;--green:#10b981;--purple:#a855f7}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto}
+.screen{display:none;flex-direction:column;height:100%;overflow-y:auto}
+.screen.active{display:flex}
 
-  /* SCREENS */
-  .screen { display: none; flex-direction: column; height: 100%; overflow-y: auto; }
-  .screen.active { display: flex; }
+/* SPLASH */
+#splash{background:linear-gradient(160deg,#0c1220 0%,#0d2137 50%,#0c1220 100%);align-items:center;justify-content:center;text-align:center;padding:2rem;gap:0.6rem}
+#splash .logo{font-size:4.5rem;animation:pop 0.6s ease}
+#splash h1{font-family:'Bebas Neue',sans-serif;font-size:3.2rem;letter-spacing:2px;line-height:1}
+#splash h1 span{color:#3b82f6}
+.village-name{font-size:0.85rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+.tags{display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:center;margin:0.5rem 0 1rem}
+.tag{background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:20px;padding:0.25rem 0.8rem;font-size:0.75rem;color:#93c5fd}
+.btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:white;border:none;border-radius:16px;padding:1rem 2.5rem;font-size:1.1rem;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;letter-spacing:1px;box-shadow:0 8px 24px rgba(59,130,246,0.35);transition:transform 0.15s}
+.btn-primary:active{transform:scale(0.96)}
+.btn-ghost{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;font-family:'Nunito',sans-serif;padding:0.5rem}
 
-  /* SPLASH */
-  #splash {
-    background: linear-gradient(160deg, #0c1220 0%, #0d2137 50%, #0c1220 100%);
-    align-items: center; justify-content: center; text-align: center; padding: 2rem; gap: 0.6rem;
-  }
-  #splash .logo { font-size: 4.5rem; animation: pop 0.6s ease; }
-  #splash h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3.2rem; letter-spacing: 2px; line-height: 1; }
-  #splash h1 span { color: #3b82f6; }
-  #splash .village-name { font-size: 0.85rem; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 0.5rem; }
-  #splash .tags { display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin: 0.5rem 0 1rem; }
-  #splash .tag { background: rgba(59,130,246,0.12); border: 1px solid rgba(59,130,246,0.25); border-radius: 20px; padding: 0.25rem 0.8rem; font-size: 0.75rem; color: #93c5fd; }
-  .btn-primary { background: linear-gradient(135deg, #3b82f6, #6366f1); color: white; border: none; border-radius: 16px; padding: 1rem 2.5rem; font-size: 1.1rem; font-weight: 900; cursor: pointer; font-family: 'Nunito', sans-serif; letter-spacing: 1px; box-shadow: 0 8px 24px rgba(59,130,246,0.35); transition: transform 0.15s, box-shadow 0.15s; }
-  .btn-primary:active { transform: scale(0.96); box-shadow: none; }
-  .btn-ghost { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9rem; font-family: 'Nunito', sans-serif; padding: 0.5rem; }
+/* TEAM */
+#team{align-items:center;justify-content:center;padding:1.5rem;gap:1rem;background:var(--bg)}
+#team h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:1px}
+#team p{color:var(--muted);font-size:0.88rem;text-align:center}
+.team-cards{display:flex;gap:0.8rem;margin:0.5rem 0;justify-content:center}
+.team-card{width:110px;background:rgba(255,255,255,0.04);border:2px solid var(--border);border-radius:20px;padding:1.2rem 0.8rem;text-align:center;cursor:pointer;transition:all 0.2s}
+.team-card.sel-rouge{background:rgba(239,68,68,0.15);border-color:var(--rouge);box-shadow:0 6px 20px rgba(239,68,68,0.3);transform:scale(1.06)}
+.team-card.sel-bleu{background:rgba(59,130,246,0.15);border-color:var(--bleu);box-shadow:0 6px 20px rgba(59,130,246,0.3);transform:scale(1.06)}
+.team-card.sel-vert{background:rgba(34,197,94,0.15);border-color:var(--vert);box-shadow:0 6px 20px rgba(34,197,94,0.3);transform:scale(1.06)}
+.team-card .t-emoji{font-size:2rem;margin-bottom:0.4rem}
+.team-card .t-name{font-weight:900;font-size:0.85rem}
 
-  /* TEAM SELECT */
-  #team { align-items: center; justify-content: center; padding: 2rem; gap: 1rem; background: var(--bg); }
-  #team h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; }
-  #team p { color: var(--muted); font-size: 0.88rem; text-align: center; }
-  .team-cards { display: flex; gap: 1rem; margin: 0.5rem 0; }
-  .team-card { flex: 1; background: rgba(255,255,255,0.04); border: 2px solid var(--border); border-radius: 20px; padding: 1.5rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
-  .team-card.selected-rouge { background: rgba(239,68,68,0.15); border-color: var(--rouge); box-shadow: 0 6px 20px rgba(239,68,68,0.3); transform: scale(1.04); }
-  .team-card.selected-bleu { background: rgba(59,130,246,0.15); border-color: var(--bleu); box-shadow: 0 6px 20px rgba(59,130,246,0.3); transform: scale(1.04); }
-  .team-card .emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
-  .team-card .name { font-weight: 900; font-size: 1rem; }
+/* MAP */
+#map-screen{position:relative;overflow:hidden}
+#header{padding:0.6rem 1rem 0.3rem;display:flex;justify-content:space-between;align-items:center;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.game-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:1px}
+.game-title span{color:var(--bleu)}
+.timer-box{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:0.25rem 0.7rem;font-weight:900;font-size:1.1rem;color:var(--gold)}
+#scores-bar{display:flex;gap:0.3rem;padding:0.4rem 0.6rem;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.score-chip{flex:1;background:rgba(255,255,255,0.04);border:1.5px solid var(--border);border-radius:10px;padding:0.3rem 0.4rem;display:flex;justify-content:space-between;align-items:center;font-size:0.7rem}
+.score-chip.my-rouge{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.5)}
+.score-chip.my-bleu{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.5)}
+.score-chip.my-vert{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.5)}
+.score-val{font-weight:900;font-size:0.9rem}
+#map{flex:1;z-index:1}
+.leaflet-container{background:#1a2e1a !important}
 
-  /* MAP SCREEN */
-  #map-screen { position: relative; overflow: hidden; }
-  #header { padding: 0.7rem 1rem 0.4rem; display: flex; justify-content: space-between; align-items: center; background: var(--card); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  #header .game-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; }
-  #header .game-title span { color: var(--bleu); }
-  #header .timer-box { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); border-radius: 10px; padding: 0.25rem 0.7rem; font-weight: 900; font-size: 1.1rem; color: var(--gold); }
-  #scores-bar { display: flex; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--card); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .score-chip { flex: 1; background: rgba(255,255,255,0.04); border: 1.5px solid var(--border); border-radius: 10px; padding: 0.35rem 0.7rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; }
-  .score-chip.my-team-rouge { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); }
-  .score-chip.my-team-bleu { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.4); }
-  .score-val { font-weight: 900; font-size: 1rem; }
-  #map { flex: 1; z-index: 1; }
-  .leaflet-container { background: #1a2e1a !important; }
+/* ZONE PANEL */
+#zone-panel{background:var(--card);border-top:1px solid var(--border);padding:0.8rem 1rem;flex-shrink:0;display:none}
+#zone-panel.visible{display:block}
+.zone-header{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.8rem}
+.zone-emoji-big{font-size:2rem}
+.zone-title{font-weight:900;font-size:1rem}
+.zone-pts{font-size:0.75rem;color:var(--gold)}
+.zone-status{font-size:0.75rem;font-weight:700;margin-left:auto}
+.panel-access-btn{width:100%;background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.2));border:1.5px solid rgba(99,102,241,0.4);border-radius:14px;padding:0.8rem;color:white;font-size:0.95rem;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.15s}
+.panel-access-btn:active{transform:scale(0.97)}
 
-  /* ZONE PANEL */
-  #zone-panel { background: var(--card); border-top: 1px solid var(--border); padding: 0.8rem 1rem; flex-shrink: 0; display: none; }
-  #zone-panel.visible { display: block; }
-  .zone-header { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 0.7rem; }
-  .zone-emoji-big { font-size: 2rem; }
-  .zone-title { font-weight: 900; font-size: 1rem; }
-  .zone-pts { font-size: 0.75rem; color: var(--gold); }
-  .zone-status { font-size: 0.75rem; font-weight: 700; margin-left: auto; }
-  .challenge-btns { display: flex; gap: 0.5rem; }
-  .challenge-btn { flex: 1; border: 1.5px solid; border-radius: 10px; padding: 0.5rem 0.2rem; font-size: 0.7rem; font-weight: 800; cursor: pointer; font-family: 'Nunito', sans-serif; background: transparent; transition: all 0.15s; }
-  .challenge-btn:active { transform: scale(0.96); }
-  .challenge-btn.photo { border-color: rgba(245,158,11,0.5); color: var(--gold); }
-  .challenge-btn.photo:hover { background: rgba(245,158,11,0.1); }
-  .challenge-btn.quiz { border-color: rgba(59,130,246,0.5); color: var(--bleu); }
-  .challenge-btn.quiz:hover { background: rgba(59,130,246,0.1); }
-  .challenge-btn.action { border-color: rgba(16,185,129,0.5); color: var(--green); }
-  .challenge-btn.action:hover { background: rgba(16,185,129,0.1); }
+/* ACCESS CODE SCREEN */
+#access-screen{align-items:center;justify-content:center;padding:2rem;background:var(--bg);text-align:center;gap:0.8rem}
+.access-zone-emoji{font-size:4rem}
+.access-zone-name{font-size:1.1rem;color:var(--muted);font-weight:700}
+.access-box{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:1.5rem;max-width:320px;width:100%}
+.access-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px;margin-bottom:0.3rem}
+.access-desc{color:var(--muted);font-size:0.85rem;margin-bottom:1rem;line-height:1.5}
+.pin-display{display:flex;gap:0.6rem;justify-content:center;margin-bottom:1rem}
+.pin-digit{width:52px;height:62px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;transition:all 0.15s}
+.pin-digit.filled{background:rgba(99,102,241,0.2);border-color:rgba(99,102,241,0.6);color:white}
+.pin-digit.error{background:rgba(239,68,68,0.2);border-color:var(--rouge);animation:shake 0.4s ease}
+.pin-digit.success{background:rgba(16,185,129,0.2);border-color:var(--green)}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;max-width:220px;margin:0 auto}
+.num-btn{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:0.9rem;font-size:1.3rem;font-weight:900;color:white;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.1s}
+.num-btn:active{transform:scale(0.9);background:rgba(255,255,255,0.15)}
+.num-btn.del{color:#f87171;border-color:rgba(239,68,68,0.25)}
+.access-feedback{font-size:0.9rem;font-weight:700;min-height:1.2rem;margin-top:0.5rem}
 
-  /* BOTTOM NAV */
-  #bottom-nav { display: flex; border-top: 1px solid var(--border); background: var(--card); flex-shrink: 0; }
-  .nav-btn { flex: 1; background: none; border: none; color: var(--muted); padding: 0.6rem 0.5rem; cursor: pointer; font-size: 0.72rem; font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; align-items: center; gap: 2px; transition: color 0.15s; }
-  .nav-btn .nav-icon { font-size: 1.2rem; }
-  .nav-btn.active { color: var(--bleu); }
+/* CHALLENGE SCREEN */
+#challenge-screen{align-items:center;justify-content:flex-start;padding:1.5rem;background:var(--bg);text-align:center;gap:0.7rem;overflow-y:auto}
+.ch-zone-emoji{font-size:3.5rem;margin-top:0.5rem}
+.ch-zone-name{font-size:1rem;color:var(--muted);font-weight:700}
+.challenge-badge{border-radius:12px;padding:0.35rem 1rem;font-weight:800;font-size:0.88rem;border:2px solid}
+.task-box{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:1.2rem;max-width:360px;font-size:0.95rem;line-height:1.6;text-align:left;width:100%}
+.task-section-title{font-weight:900;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.4rem}
+.task-text{margin-bottom:0.8rem;font-size:1rem}
+.code-ref{background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.25);border-radius:12px;padding:0.8rem;margin-top:0.5rem;font-family:monospace;line-height:2;font-size:0.75rem;color:#e2e8f0;word-break:break-all}
+.code-ref .code-title{font-family:'Nunito',sans-serif;font-weight:900;color:#c084fc;font-size:0.75rem;margin-bottom:0.3rem;text-transform:uppercase}
+.answer-box{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:0.8rem;margin-top:0.5rem}
+.answer-title{font-weight:900;color:var(--green);font-size:0.78rem;text-transform:uppercase;margin-bottom:0.3rem}
+.answer-input{width:100%;background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:0.6rem 0.8rem;color:white;font-size:1rem;font-family:'Nunito',sans-serif;outline:none;margin-top:0.3rem}
+.answer-input:focus{border-color:var(--green)}
+.answer-feedback{font-size:0.85rem;margin-top:0.4rem;font-weight:700;min-height:1.2rem}
+.photo-note{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:0.7rem;margin-top:0.5rem;font-size:0.82rem;color:var(--gold)}
+.challenge-actions{display:flex;gap:0.8rem;margin:0.5rem 0 1.5rem}
+.btn-success{background:var(--green);color:white;border:none;border-radius:14px;padding:0.9rem 1.8rem;font-weight:900;cursor:pointer;font-size:1rem;font-family:'Nunito',sans-serif}
+.btn-success:disabled{background:#1a2e22;color:#374151;cursor:not-allowed}
+.btn-cancel{background:rgba(255,255,255,0.07);color:var(--muted);border:none;border-radius:14px;padding:0.9rem 1.2rem;cursor:pointer;font-size:0.9rem;font-family:'Nunito',sans-serif}
 
-  /* CHALLENGE SCREEN */
-  #challenge-screen { align-items: center; justify-content: center; padding: 2rem; background: var(--bg); text-align: center; gap: 0.8rem; }
-  #challenge-screen .zone-big { font-size: 4rem; }
-  #challenge-screen .zone-label { font-size: 1rem; color: var(--muted); font-weight: 700; }
-  #challenge-screen .challenge-badge { border-radius: 12px; padding: 0.35rem 1rem; font-weight: 800; font-size: 0.88rem; border: 2px solid; }
-  #challenge-screen .task-box { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; max-width: 340px; font-size: 1.05rem; line-height: 1.6; }
-  .challenge-actions { display: flex; gap: 0.8rem; margin-top: 0.5rem; }
-  .btn-success { background: var(--green); color: white; border: none; border-radius: 14px; padding: 0.9rem 1.8rem; font-weight: 900; cursor: pointer; font-size: 1rem; font-family: 'Nunito', sans-serif; box-shadow: 0 4px 16px rgba(16,185,129,0.35); }
-  .btn-cancel { background: rgba(255,255,255,0.07); color: var(--muted); border: none; border-radius: 14px; padding: 0.9rem 1.2rem; cursor: pointer; font-size: 0.9rem; font-family: 'Nunito', sans-serif; }
+/* BOTTOM NAV */
+#bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--card);flex-shrink:0}
+.nav-btn{flex:1;background:none;border:none;color:var(--muted);padding:0.6rem 0.5rem;cursor:pointer;font-size:0.72rem;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav-btn .nav-icon{font-size:1.2rem}
 
-  /* SCORES SCREEN */
-  #scores-screen { padding: 1.2rem; background: var(--bg); gap: 0.8rem; }
-  #scores-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; }
-  .score-team-card { border-radius: 20px; padding: 1.2rem; border: 2px solid; }
-  .score-team-card.rouge { background: rgba(239,68,68,0.08); border-color: rgba(239,68,68,0.3); }
-  .score-team-card.bleu { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); }
-  .score-team-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
-  .score-team-name { font-weight: 900; font-size: 1.1rem; }
-  .score-team-total { font-weight: 900; font-size: 1.6rem; }
-  .score-zone-row { display: flex; justify-content: space-between; font-size: 0.83rem; padding: 0.2rem 0; border-top: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; }
-  .no-zones { color: var(--muted); font-size: 0.85rem; }
-  .free-zones-card { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
-  .free-zones-title { color: var(--muted); font-size: 0.83rem; margin-bottom: 0.5rem; }
+/* SCORES */
+#scores-screen{padding:1.2rem;background:var(--bg);gap:0.8rem}
+#scores-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2rem}
+.score-team-card{border-radius:20px;padding:1.2rem;border:2px solid;margin-bottom:0}
+.score-team-card.rouge{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3)}
+.score-team-card.bleu{background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.3)}
+.score-team-card.vert{background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.3)}
+.score-team-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem}
+.score-team-name{font-weight:900;font-size:1rem}
+.score-team-total{font-weight:900;font-size:1.5rem}
+.score-zone-row{display:flex;justify-content:space-between;font-size:0.82rem;padding:0.2rem 0;border-top:1px solid rgba(255,255,255,0.05);color:#cbd5e1}
+.no-zones{color:var(--muted);font-size:0.82rem}
+.free-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:16px;padding:1rem}
 
-  /* RULES SCREEN */
-  #rules-screen { padding: 1.2rem; background: var(--bg); gap: 0.8rem; }
-  #rules-screen h2 { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; }
-  .rule-card { display: flex; gap: 1rem; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 16px; padding: 1rem; }
-  .rule-icon { font-size: 1.8rem; flex-shrink: 0; }
-  .rule-title { font-weight: 900; margin-bottom: 0.2rem; }
-  .rule-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
-  .challenge-types { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 16px; padding: 1rem; }
-  .challenge-type-title { font-weight: 800; color: #93c5fd; margin-bottom: 0.6rem; font-size: 0.9rem; }
-  .challenge-type-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; font-size: 0.85rem; color: #cbd5e1; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+/* RULES */
+#rules-screen{padding:1.2rem;background:var(--bg);gap:0.8rem}
+#rules-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2rem}
+.rule-card{display:flex;gap:1rem;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;padding:1rem}
+.rule-icon{font-size:1.8rem;flex-shrink:0}
+.rule-title{font-weight:900;margin-bottom:0.2rem}
+.rule-desc{color:var(--muted);font-size:0.83rem;line-height:1.5}
+.codes-card{background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);border-radius:16px;padding:1rem}
+.codes-card-title{font-weight:900;color:#c084fc;margin-bottom:0.6rem}
+.code-row{font-size:0.82rem;color:#cbd5e1;padding:0.25rem 0;border-top:1px solid rgba(255,255,255,0.05)}
 
-  /* NOTIFICATION */
-  #notif { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--green); color: white; border-radius: 14px; padding: 0.7rem 1.4rem; font-weight: 800; font-size: 0.9rem; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 9999; white-space: nowrap; transition: transform 0.3s ease; pointer-events: none; }
-  #notif.show { transform: translateX(-50%) translateY(0); }
+/* NOTIF */
+#notif{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-80px);color:white;border-radius:14px;padding:0.7rem 1.4rem;font-weight:800;font-size:0.88rem;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:9999;white-space:nowrap;transition:transform 0.3s ease;pointer-events:none;max-width:90vw;text-align:center}
+#notif.show{transform:translateX(-50%) translateY(0)}
 
-  /* Custom marker */
-  .zone-marker { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-  .zone-marker .icon-circle { width: 44px; height: 44px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; background: rgba(30,50,80,0.85); backdrop-filter: blur(4px); box-shadow: 0 3px 12px rgba(0,0,0,0.5); transition: all 0.2s; }
-  .zone-marker .icon-label { font-size: 0.58rem; font-weight: 800; background: rgba(0,0,0,0.75); border-radius: 6px; padding: 1px 5px; margin-top: 2px; white-space: nowrap; max-width: 70px; overflow: hidden; text-overflow: ellipsis; color: #cbd5e1; }
-  .zone-marker.team-rouge .icon-circle { background: rgba(239,68,68,0.8); border-color: #ef4444; box-shadow: 0 3px 16px rgba(239,68,68,0.5); }
-  .zone-marker.team-bleu .icon-circle { background: rgba(59,130,246,0.8); border-color: #3b82f6; box-shadow: 0 3px 16px rgba(59,130,246,0.5); }
+/* MAP MARKERS */
+.zone-marker{display:flex;flex-direction:column;align-items:center;cursor:pointer}
+.zone-marker .icon-circle{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:rgba(20,40,70,0.9);box-shadow:0 3px 12px rgba(0,0,0,0.5)}
+.zone-marker .icon-label{font-size:0.56rem;font-weight:800;background:rgba(0,0,0,0.8);border-radius:6px;padding:1px 5px;margin-top:2px;white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
+.zone-marker.team-rouge .icon-circle{background:rgba(239,68,68,0.85);border-color:#ef4444;box-shadow:0 3px 16px rgba(239,68,68,0.5)}
+.zone-marker.team-bleu .icon-circle{background:rgba(59,130,246,0.85);border-color:#3b82f6;box-shadow:0 3px 16px rgba(59,130,246,0.5)}
+.zone-marker.team-vert .icon-circle{background:rgba(34,197,94,0.85);border-color:#22c55e;box-shadow:0 3px 16px rgba(34,197,94,0.5)}
 
-  @keyframes pop { 0%{transform:scale(0.6);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1} }
-  @keyframes slideUp { from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1} }
-  @keyframes pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.3)} }
+@keyframes pop{0%{transform:scale(0.6);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 </style>
 </head>
 <body>
 <div id="app">
 
-  <!-- SPLASH -->
-  <div id="splash" class="screen active">
-    <div class="logo">🗺️</div>
-    <h1>VILLAGE<span>WARS</span></h1>
-    <div class="village-name">⚡ Labuissière · Belgique</div>
-    <div class="tags">
-      <span class="tag">🏃 Exploration</span>
-      <span class="tag">📸 Défis</span>
-      <span class="tag">⚔️ Conquête</span>
-    </div>
-    <button class="btn-primary" onclick="showScreen('team')">JOUER →</button>
-    <p style="color:var(--muted);font-size:0.75rem;margin-top:0.5rem">2–8 joueurs · Plein air · 1 heure</p>
+<!-- SPLASH -->
+<div id="splash" class="screen active">
+  <div class="logo">🗺️</div>
+  <h1>VILLAGE<span>WARS</span></h1>
+  <div class="village-name">⚡ Labuissière · Belgique</div>
+  <div class="tags">
+    <span class="tag">📍 Sur place</span>
+    <span class="tag">🔐 Codes Secrets</span>
+    <span class="tag">⚔️ 3 Équipes</span>
   </div>
-
-  <!-- TEAM SELECT -->
-  <div id="team" class="screen">
-    <h2>Choisis ton équipe</h2>
-    <p>Chaque joueur choisit son camp sur son téléphone</p>
-    <div class="team-cards">
-      <div class="team-card" id="card-rouge" onclick="selectTeam('rouge')">
-        <div class="emoji">🔴</div>
-        <div class="name">Équipe Rouge</div>
-      </div>
-      <div class="team-card" id="card-bleu" onclick="selectTeam('bleu')">
-        <div class="emoji">🔵</div>
-        <div class="name">Équipe Bleue</div>
-      </div>
-    </div>
-    <button class="btn-primary" id="start-btn" style="display:none" onclick="startGame()">C'est parti ! 🚀</button>
-    <button class="btn-ghost" onclick="showScreen('splash')">← Retour</button>
-  </div>
-
-  <!-- MAP SCREEN -->
-  <div id="map-screen" class="screen">
-    <div id="header">
-      <div>
-        <div class="game-title">🗺️ VILLAGE<span>WARS</span></div>
-        <div style="font-size:0.72rem;color:var(--muted)" id="my-team-label"></div>
-      </div>
-      <div class="timer-box" id="timer">⏱ 60:00</div>
-    </div>
-    <div id="scores-bar">
-      <div class="score-chip" id="chip-rouge">
-        <span>🔴 Rouge</span><span class="score-val" id="score-rouge" style="color:var(--rouge)">0</span>
-      </div>
-      <div class="score-chip" id="chip-bleu">
-        <span>🔵 Bleu</span><span class="score-val" id="score-bleu" style="color:var(--bleu)">0</span>
-      </div>
-    </div>
-    <div id="map"></div>
-    <div id="zone-panel">
-      <div class="zone-header">
-        <div class="zone-emoji-big" id="panel-emoji"></div>
-        <div>
-          <div class="zone-title" id="panel-name"></div>
-          <div class="zone-pts" id="panel-pts"></div>
-        </div>
-        <div class="zone-status" id="panel-status"></div>
-      </div>
-      <div class="challenge-btns">
-        <button class="challenge-btn photo" onclick="startChallenge('photo')">📸<br>Photo</button>
-        <button class="challenge-btn quiz" onclick="startChallenge('quiz')">🧠<br>Quiz</button>
-        <button class="challenge-btn action" onclick="startChallenge('action')">⚡<br>Action</button>
-      </div>
-    </div>
-    <div id="bottom-nav">
-      <button class="nav-btn active" onclick="showMapScreen()"><span class="nav-icon">🗺️</span>Carte</button>
-      <button class="nav-btn" onclick="showScreen('scores-screen')"><span class="nav-icon">🏆</span>Scores</button>
-      <button class="nav-btn" onclick="showScreen('rules-screen')"><span class="nav-icon">📖</span>Règles</button>
-    </div>
-  </div>
-
-  <!-- CHALLENGE SCREEN -->
-  <div id="challenge-screen" class="screen">
-    <div class="zone-big" id="ch-emoji"></div>
-    <div class="zone-label" id="ch-zone-name"></div>
-    <div class="challenge-badge" id="ch-badge"></div>
-    <div class="task-box" id="ch-task"></div>
-    <div class="challenge-actions">
-      <button class="btn-success" id="ch-success-btn" onclick="captureZone()">✅ Défi réussi !</button>
-      <button class="btn-cancel" onclick="showMapScreen()">Annuler</button>
-    </div>
-  </div>
-
-  <!-- SCORES SCREEN -->
-  <div id="scores-screen" class="screen">
-    <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
-    <h2>🏆 Scores</h2>
-    <div class="score-team-card rouge">
-      <div class="score-team-header">
-        <span class="score-team-name">🔴 Équipe Rouge</span>
-        <span class="score-team-total" style="color:var(--rouge)" id="total-rouge">0 pts</span>
-      </div>
-      <div id="zones-rouge"><div class="no-zones">Aucune zone capturée</div></div>
-    </div>
-    <div class="score-team-card bleu">
-      <div class="score-team-header">
-        <span class="score-team-name">🔵 Équipe Bleue</span>
-        <span class="score-team-total" style="color:var(--bleu)" id="total-bleu">0 pts</span>
-      </div>
-      <div id="zones-bleu"><div class="no-zones">Aucune zone capturée</div></div>
-    </div>
-    <div class="free-zones-card">
-      <div class="free-zones-title">Zones non capturées</div>
-      <div id="zones-free"></div>
-    </div>
-  </div>
-
-  <!-- RULES SCREEN -->
-  <div id="rules-screen" class="screen">
-    <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
-    <h2>📖 Règles du jeu</h2>
-    <div class="rule-card"><div class="rule-icon">🗺️</div><div><div class="rule-title">La Carte</div><div class="rule-desc">10 zones sont placées dans Labuissière. Chaque zone rapporte entre 100 et 300 points.</div></div></div>
-    <div class="rule-card"><div class="rule-icon">📍</div><div><div class="rule-title">Se déplacer</div><div class="rule-desc">Rendez-vous physiquement près d'une zone pour l'activer. Utilisez la vraie carte du village !</div></div></div>
-    <div class="rule-card"><div class="rule-icon">⚡</div><div><div class="rule-title">Relever le défi</div><div class="rule-desc">Chaque zone a un défi : photo, quiz ou action. Réussissez-le pour capturer la zone !</div></div></div>
-    <div class="rule-card"><div class="rule-icon">⚔️</div><div><div class="rule-title">Contre-attaque</div><div class="rule-desc">Une zone ennemie peut être reprise en relevant un nouveau défi sur place.</div></div></div>
-    <div class="rule-card"><div class="rule-icon">🏆</div><div><div class="rule-title">Victoire</div><div class="rule-desc">Après 1 heure, l'équipe avec le plus de points gagne. Bonne chance !</div></div></div>
-    <div class="challenge-types">
-      <div class="challenge-type-title">Types de défis</div>
-      <div class="challenge-type-row"><div class="dot" style="background:var(--gold)"></div>📸 Photo — créativité et mise en scène</div>
-      <div class="challenge-type-row"><div class="dot" style="background:var(--bleu)"></div>🧠 Quiz — questions sur Labuissière</div>
-      <div class="challenge-type-row"><div class="dot" style="background:var(--green)"></div>⚡ Action — défi physique ou amusant</div>
-    </div>
-  </div>
-
+  <button class="btn-primary" onclick="showScreen('team')">JOUER →</button>
+  <p style="color:var(--muted);font-size:0.75rem;margin-top:0.5rem">3 équipes · Plein air · 1h30</p>
 </div>
 
-<!-- NOTIFICATION -->
+<!-- TEAM SELECT -->
+<div id="team" class="screen">
+  <h2>Choisis ton équipe</h2>
+  <p>Chaque joueur choisit son camp sur son téléphone</p>
+  <div class="team-cards">
+    <div class="team-card" id="card-rouge" onclick="selectTeam('rouge')">
+      <div class="t-emoji">🔴</div><div class="t-name">Équipe Rouge</div>
+    </div>
+    <div class="team-card" id="card-bleu" onclick="selectTeam('bleu')">
+      <div class="t-emoji">🔵</div><div class="t-name">Équipe Bleue</div>
+    </div>
+    <div class="team-card" id="card-vert" onclick="selectTeam('vert')">
+      <div class="t-emoji">🟢</div><div class="t-name">Équipe Verte</div>
+    </div>
+  </div>
+  <button class="btn-primary" id="start-btn" style="display:none" onclick="startGame()">C'est parti ! 🚀</button>
+  <button class="btn-ghost" onclick="showScreen('splash')">← Retour</button>
+</div>
+
+<!-- MAP SCREEN -->
+<div id="map-screen" class="screen">
+  <div id="header">
+    <div>
+      <div class="game-title">🗺️ VILLAGE<span>WARS</span></div>
+      <div style="font-size:0.7rem;color:var(--muted)" id="my-team-label"></div>
+    </div>
+    <div class="timer-box" id="timer">⏱ 90:00</div>
+  </div>
+  <div id="scores-bar">
+    <div class="score-chip" id="chip-rouge"><span>🔴</span><span class="score-val" id="score-rouge" style="color:var(--rouge)">0</span></div>
+    <div class="score-chip" id="chip-bleu"><span>🔵</span><span class="score-val" id="score-bleu" style="color:var(--bleu)">0</span></div>
+    <div class="score-chip" id="chip-vert"><span>🟢</span><span class="score-val" id="score-vert" style="color:var(--vert)">0</span></div>
+  </div>
+  <div id="map"></div>
+  <div id="zone-panel">
+    <div class="zone-header">
+      <div class="zone-emoji-big" id="panel-emoji"></div>
+      <div><div class="zone-title" id="panel-name"></div><div class="zone-pts" id="panel-pts"></div></div>
+      <div class="zone-status" id="panel-status"></div>
+    </div>
+    <button class="panel-access-btn" onclick="showScreen('access-screen')">🔢 Entrer le code du lieu pour jouer</button>
+  </div>
+  <div id="bottom-nav">
+    <button class="nav-btn" onclick="showMapScreen()"><span class="nav-icon">🗺️</span>Carte</button>
+    <button class="nav-btn" onclick="showScreen('scores-screen')"><span class="nav-icon">🏆</span>Scores</button>
+    <button class="nav-btn" onclick="showScreen('rules-screen')"><span class="nav-icon">📖</span>Règles</button>
+  </div>
+</div>
+
+<!-- ACCESS CODE SCREEN -->
+<div id="access-screen" class="screen">
+  <div class="access-zone-emoji" id="ac-emoji"></div>
+  <div class="access-zone-name" id="ac-name"></div>
+  <div class="access-box">
+    <div class="access-title">🔢 Code du lieu</div>
+    <div class="access-desc">Trouve le code affiché sur place et entre-le pour accéder aux défis !</div>
+    <div class="pin-display" id="pin-display">
+      <div class="pin-digit" id="pin-0">_</div>
+      <div class="pin-digit" id="pin-1">_</div>
+      <div class="pin-digit" id="pin-2">_</div>
+      <div class="pin-digit" id="pin-3">_</div>
+    </div>
+    <div class="access-feedback" id="access-feedback"></div>
+    <div class="numpad">
+      <button class="num-btn" onclick="pinPress('1')">1</button>
+      <button class="num-btn" onclick="pinPress('2')">2</button>
+      <button class="num-btn" onclick="pinPress('3')">3</button>
+      <button class="num-btn" onclick="pinPress('4')">4</button>
+      <button class="num-btn" onclick="pinPress('5')">5</button>
+      <button class="num-btn" onclick="pinPress('6')">6</button>
+      <button class="num-btn" onclick="pinPress('7')">7</button>
+      <button class="num-btn" onclick="pinPress('8')">8</button>
+      <button class="num-btn" onclick="pinPress('9')">9</button>
+      <button class="num-btn" style="grid-column:1" onclick="pinClear()">✕</button>
+      <button class="num-btn" onclick="pinPress('0')">0</button>
+      <button class="num-btn del" onclick="pinDelete()">⌫</button>
+    </div>
+  </div>
+  <button class="btn-ghost" onclick="showMapScreen()">← Retour</button>
+</div>
+
+<!-- CHALLENGE SCREEN -->
+<div id="challenge-screen" class="screen">
+  <div class="ch-zone-emoji" id="ch-emoji"></div>
+  <div class="ch-zone-name" id="ch-zone-name"></div>
+  <div class="challenge-badge" id="ch-badge"></div>
+  <div class="task-box" id="ch-task-box"></div>
+  <div class="challenge-actions">
+    <button class="btn-success" id="ch-btn" onclick="captureZone()">✅ Capturer la zone</button>
+    <button class="btn-cancel" onclick="showMapScreen()">Annuler</button>
+  </div>
+</div>
+
+<!-- SCORES SCREEN -->
+<div id="scores-screen" class="screen">
+  <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
+  <h2>🏆 Scores</h2>
+  <div class="score-team-card rouge">
+    <div class="score-team-header"><span class="score-team-name">🔴 Équipe Rouge</span><span class="score-team-total" style="color:var(--rouge)" id="total-rouge">0 pts</span></div>
+    <div id="zones-rouge"><div class="no-zones">Aucune zone capturée</div></div>
+  </div>
+  <div class="score-team-card bleu" style="margin-top:0.8rem">
+    <div class="score-team-header"><span class="score-team-name">🔵 Équipe Bleue</span><span class="score-team-total" style="color:var(--bleu)" id="total-bleu">0 pts</span></div>
+    <div id="zones-bleu"><div class="no-zones">Aucune zone capturée</div></div>
+  </div>
+  <div class="score-team-card vert" style="margin-top:0.8rem">
+    <div class="score-team-header"><span class="score-team-name">🟢 Équipe Verte</span><span class="score-team-total" style="color:var(--vert)" id="total-vert">0 pts</span></div>
+    <div id="zones-vert"><div class="no-zones">Aucune zone capturée</div></div>
+  </div>
+  <div class="free-card" style="margin-top:0.8rem">
+    <div style="color:var(--muted);font-size:0.82rem;margin-bottom:0.5rem">Zones libres</div>
+    <div id="zones-free"></div>
+  </div>
+</div>
+
+<!-- RULES SCREEN -->
+<div id="rules-screen" class="screen">
+  <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
+  <h2>📖 Règles</h2>
+  <div class="rule-card"><div class="rule-icon">🗺️</div><div><div class="rule-title">La Carte</div><div class="rule-desc">10 zones sont placées dans Labuissière. Chaque zone vaut entre 120 et 300 points.</div></div></div>
+  <div class="rule-card"><div class="rule-icon">🔢</div><div><div class="rule-title">Code du lieu — OBLIGATOIRE</div><div class="rule-desc">Chaque lieu a un code à 4 chiffres affiché sur place. Tu dois être physiquement là pour le voir et le saisir !</div></div></div>
+  <div class="rule-card"><div class="rule-icon">🔐</div><div><div class="rule-title">Défi Code Secret</div><div class="rule-desc">Une fois le code du lieu saisi, tu reçois un défi : déchiffrer ou encoder un message en Morse, Templiers ou Lapin. Sans la bonne réponse → pas de capture !</div></div></div>
+  <div class="rule-card"><div class="rule-icon">📸</div><div><div class="rule-title">Preuve Photo</div><div class="rule-desc">Après la capture, prenez une photo de toute l'équipe sur place comme preuve !</div></div></div>
+  <div class="rule-card"><div class="rule-icon">⚔️</div><div><div class="rule-title">Contre-attaque</div><div class="rule-desc">Une zone ennemie peut être reprise : allez sur place, entrez le code du lieu et réussissez un nouveau défi !</div></div></div>
+  <div class="rule-card"><div class="rule-icon">🏆</div><div><div class="rule-title">Victoire</div><div class="rule-desc">Après 1h30, l'équipe avec le plus de points gagne !</div></div></div>
+  <div class="codes-card">
+    <div class="codes-card-title">🔑 Les 3 codes utilisés dans les défis</div>
+    <div class="code-row"><b>Code Morse</b> · − · − (points et tirets)</div>
+    <div class="code-row"><b>Code Templiers</b> ⌐ ¬ L Γ (symboles géométriques)</div>
+    <div class="code-row"><b>Code Lapin</b> 🐰🥕🌿 (emojis animaux et nature)</div>
+  </div>
+</div>
+
+</div>
 <div id="notif"></div>
 
 <script>
 // ============================================================
-// DONNÉES DU JEU — Labuissière, Belgique
+// CODES DES LIEUX (à coller sur place)
+// ============================================================
+const LOCATION_CODES = {
+  1:'1847', 2:'2391', 3:'5028', 4:'7413', 5:'3672',
+  6:'9054', 7:'4817', 8:'6203', 9:'8436', 10:'5791'
+};
+
+// ============================================================
+// TABLES DE CODES SECRETS
+// ============================================================
+const MORSE = {A:'·−',B:'−···',C:'−·−·',D:'−··',E:'·',F:'··−·',G:'−−·',H:'····',I:'··',J:'·−−−',K:'−·−',L:'·−··',M:'−−',N:'−·',O:'−−−',P:'·−−·',Q:'−−·−',R:'·−·',S:'···',T:'−',U:'··−',V:'···−',W:'·−−',X:'−··−',Y:'−·−−',Z:'−−··'};
+const TEMPLIERS = {A:'⌐',B:'⌐·',C:'¬',D:'¬·',E:'L',F:'L·',G:'Γ',H:'Γ·',I:'⌐⌐',J:'⌐⌐·',K:'Π',L:'Π·',M:'⊓',N:'⊓·',O:'⊏',P:'⊏·',Q:'⊐',R:'⊐·',S:'⊔',T:'⊔·',U:'⊣',V:'⊣·',W:'⊢',X:'⊢·',Y:'⊤',Z:'⊤·'};
+const LAPIN = {A:'🐰',B:'🥕',C:'🌿',D:'🐾',E:'🍀',F:'🌸',G:'🐇',H:'🌾',I:'🌻',J:'🍃',K:'🌷',L:'🌼',M:'🍁',N:'🦋',O:'🌺',P:'🌹',Q:'🌴',R:'🍂',S:'🌱',T:'🌝',U:'🌙',V:'⭐',W:'🌟',X:'💫',Y:'✨',Z:'🌈'};
+
+const CODE_NAMES = {morse:'Code Morse 📡',templiers:'Code Templiers ⚔️',lapin:'Code Lapin 🐰'};
+const CODE_REFS = {
+  morse:'A·− B−··· C−·−· D−·· E· F··−· G−−· H···· I·· J·−−− K−·− L·−·· M−− N−· O−−− P·−−· Q−−·− R·−· S··· T− U··− V···− W·−− X−··− Y−·−− Z−−··',
+  templiers:'A⌐ B⌐· C¬ D¬· EL FL· GΓ HΓ· I⌐⌐ J⌐⌐· KΠ LΠ· M⊓ N⊓· O⊏ P⊏· Q⊐ R⊐· S⊔ T⊔· U⊣ V⊣· W⊢ X⊢· Y⊤ Z⊤·',
+  lapin:'A🐰 B🥕 C🌿 D🐾 E🍀 F🌸 G🐇 H🌾 I🌻 J🍃 K🌷 L🌼 M🍁 N🦋 O🌺 P🌹 Q🌴 R🍂 S🌱 T🌝 U🌙 V⭐ W🌟 X💫 Y✨ Z🌈'
+};
+
+function encodeWord(word, dict) {
+  return word.toUpperCase().split('').filter(c=>dict[c]).map(c=>dict[c]).join(' ');
+}
+
+// ============================================================
+// DÉFIS PAR ZONE
+// ============================================================
+const ZONE_CHALLENGES = {
+  1:{decode:{type:'morse',code:'··· −−− ···',answer:'SOS'},encode:{type:'lapin',word:'ETE'},photo:"Toute l'équipe fait une pose devant l'église !"},
+  2:{decode:{type:'lapin',code:'⭐ 🌻 🍀',answer:'VIE'},encode:{type:'morse',word:'AMI'},photo:"Trouvez la tombe la plus ancienne et photographiez-la avec respect."},
+  3:{decode:{type:'morse',code:'−−· · ·−· ·',answer:'GARE'},encode:{type:'templiers',word:'TRAIN'},photo:"Recréez une scène de voyageurs en attente du train !"},
+  4:{decode:{type:'templiers',code:'¬ ·· ⊔· 🍀',answer:'CITE'},encode:{type:'lapin',word:'MAISON'},photo:"Photographiez le détail architectural le plus original de la cité."},
+  5:{decode:{type:'lapin',code:'🍀 🌺 🌙',answer:'EOU'},encode:{type:'morse',word:'EAU'},photo:"Photo créative avec l'écluse et la Sambre en arrière-plan !"},
+  6:{decode:{type:'morse',code:'··−· · ⊔· ·',answer:'FETE'},encode:{type:'lapin',word:'MUSIQUE'},photo:"Toute l'équipe chante sous le kiosque !"},
+  7:{decode:{type:'lapin',code:'🌺 🦋 🐾 🍀',answer:'ONDE'},encode:{type:'morse',word:'EAU'},photo:"Photo de groupe avec le reflet de l'équipe dans la Sambre !"},
+  8:{decode:{type:'morse',code:'−·· · −· ⊔·',answer:'DENT'},encode:{type:'templiers',word:'SOIN'},photo:"Toute l'équipe avec le plus grand sourire devant la façade !"},
+  9:{decode:{type:'lapin',code:'🍂 🌺 🌱 🍀',answer:'ROSE'},encode:{type:'lapin',word:'FLEUR'},photo:"Chaque joueur tient une fleur imaginaire — soyez créatifs !"},
+  10:{decode:{type:'morse',code:'···− −−− ⊔· ·',answer:'VOTE'},encode:{type:'templiers',word:'VILLAGE'},photo:"Photo officielle 'style cérémonie' devant la salle communale !"}
+};
+
+// ============================================================
+// ZONES GPS — Labuissière, Merbes-le-Château 6567
 // ============================================================
 const ZONES = [
-  { id:1, name:"L'Église Saint-Martin", emoji:"⛪", lat:50.3362, lng:4.2201, points:250, challenge:"quiz",
-    tasks: { photo:"Prenez une photo créative de toute l'équipe devant l'église !", quiz:"En quelle année a été construite l'église Saint-Martin de Labuissière ? (Réponse : 1159)", action:"Faites une minute de silence face à l'église puis criez le nom de votre équipe !" }},
-  { id:2, name:"Le Cimetière", emoji:"🪦", lat:50.3358, lng:4.2198, points:150, challenge:"photo",
-    tasks: { photo:"Trouvez la tombe la plus ancienne et photographiez-la sans irrespecter les lieux.", quiz:"Combien de rangées de tombes compte le cimetière ? Estimez le nombre !", action:"Marchez en silence pendant 60 secondes autour du cimetière en équipe." }},
-  { id:3, name:"La Gare de Labuissière", emoji:"🚉", lat:50.3380, lng:4.2230, points:200, challenge:"action",
-    tasks: { photo:"Recréez une photo de 'voyageurs en attente du train' avec toute l'équipe !", quiz:"Combien de voies de chemin de fer compte la gare ? Observez et répondez.", action:"Improvisez une danse de 20 secondes sur le quai et filmez-la !" }},
-  { id:4, name:"La Cité", emoji:"🏘️", lat:50.3372, lng:4.2180, points:180, challenge:"photo",
-    tasks: { photo:"Photographiez le détail architectural le plus original de la cité.", quiz:"Comptez le nombre de maisons dans la rue principale de la cité.", action:"Interviewez un résident de la cité (avec son accord) et filmez 15 secondes !" }},
-  { id:5, name:"L'Écluse", emoji:"⚓", lat:50.3340, lng:4.2210, points:300, challenge:"action",
-    tasks: { photo:"Prenez une photo créative avec l'écluse et la Sambre en arrière-plan.", quiz:"Comment fonctionne une écluse ? Expliquez le principe en 30 secondes en vidéo !", action:"Trouvez 3 objets naturels près de l'écluse et construisez quelque chose !" }},
-  { id:6, name:"Le Kiosque", emoji:"🎪", lat:50.3368, lng:4.2195, points:120, challenge:"action",
-    tasks: { photo:"Prenez la photo la plus créative possible au kiosque avec toute l'équipe !", quiz:"Décrivez l'architecture du kiosque : couleur, matériau, forme du toit.", action:"Chantez une chanson de 30 secondes sous le kiosque et filmez !" }},
-  { id:7, name:"La Sambre", emoji:"🌊", lat:50.3335, lng:4.2215, points:200, challenge:"photo",
-    tasks: { photo:"Prenez une photo de groupe avec un reflet de l'équipe dans l'eau !", quiz:"Quel animal pouvez-vous observer près de la Sambre ? Photographiez-le !", action:"Trouvez le son le plus original au bord de la Sambre et enregistrez-le." }},
-  { id:8, name:"Santé Sourire", emoji:"🦷", lat:50.3375, lng:4.2188, points:150, challenge:"quiz",
-    tasks: { photo:"Prenez une photo de toute l'équipe avec le plus grand sourire possible devant la façade !", quiz:"Quel est le numéro de téléphone affiché sur la façade du cabinet dentaire ?", action:"Chaque membre de l'équipe montre ses dents et l'équipe adverse juge !" }},
-  { id:9, name:"Fleuriste Defossez", emoji:"💐", lat:50.3370, lng:4.2192, points:130, challenge:"photo",
-    tasks: { photo:"Chaque joueur tient une fleur (sans la cueillir !) et posez pour une photo !", quiz:"Quelle est la fleur mise en avant dans la vitrine du fleuriste aujourd'hui ?", action:"Créez un bouquet imaginaire avec des éléments naturels trouvés autour !" }},
-  { id:10, name:"Salle Communale", emoji:"🏛️", lat:50.3365, lng:4.2205, points:220, challenge:"action",
-    tasks: { photo:"Prenez une photo officielle 'style cérémonie' de toute l'équipe devant la salle !", quiz:"Quel événement est affiché sur les panneaux de la salle communale ?", action:"Faites un discours de victoire de 20 secondes devant la salle et filmez !" }},
+  {id:1,name:"L'Église",emoji:"⛪",lat:50.3318,lng:4.1985,points:250},
+  {id:2,name:"Le Cimetière",emoji:"🪦",lat:50.3315,lng:4.1980,points:150},
+  {id:3,name:"La Gare",emoji:"🚉",lat:50.3355,lng:4.2025,points:200},
+  {id:4,name:"La Cité",emoji:"🏘️",lat:50.3325,lng:4.1970,points:180},
+  {id:5,name:"L'Écluse",emoji:"⚓",lat:50.3308,lng:4.2000,points:300},
+  {id:6,name:"Le Kiosque",emoji:"🎪",lat:50.3320,lng:4.1990,points:120},
+  {id:7,name:"La Sambre",emoji:"🌊",lat:50.3305,lng:4.2010,points:200},
+  {id:8,name:"Santé Sourire",emoji:"🦷",lat:50.3322,lng:4.1975,points:150},
+  {id:9,name:"Fleuriste Defossez",emoji:"💐",lat:50.3328,lng:4.1982,points:130},
+  {id:10,name:"Salle Communale",emoji:"🏛️",lat:50.3318,lng:4.1993,points:220},
 ];
 
-const CHALLENGES_META = {
-  photo:  { label:"📸 Défi Photo",  color:"#f59e0b", bg:"rgba(245,158,11,0.15)" },
-  quiz:   { label:"🧠 Défi Quiz",   color:"#3b82f6", bg:"rgba(59,130,246,0.15)" },
-  action: { label:"⚡ Défi Action", color:"#10b981", bg:"rgba(16,185,129,0.15)" },
-};
+const TEAMS = [
+  {id:'rouge',emoji:'🔴',name:'Équipe Rouge',color:'#ef4444'},
+  {id:'bleu',emoji:'🔵',name:'Équipe Bleue',color:'#3b82f6'},
+  {id:'vert',emoji:'🟢',name:'Équipe Verte',color:'#22c55e'},
+];
 
 // ============================================================
 // STATE
 // ============================================================
 let selectedTeam = null;
-let zoneStates = {}; // { zoneId: 'rouge'|'bleu'|null }
+let zoneStates = {};
 let activeZone = null;
-let activeChallenge = null;
-let timerSeconds = 3600;
+let currentChallenge = null;
+let codeOk = false;
+let pinValue = '';
+let timerSec = 5400;
 let timerInterval = null;
 let map = null;
 let markers = {};
@@ -320,18 +386,27 @@ let gameStarted = false;
 ZONES.forEach(z => zoneStates[z.id] = null);
 
 // ============================================================
-// SCREENS
+// NAVIGATION
 // ============================================================
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  if (id === 'scores-screen') refreshScoresScreen();
+  if (id === 'access-screen' && activeZone) {
+    document.getElementById('ac-emoji').textContent = activeZone.emoji;
+    document.getElementById('ac-name').textContent = activeZone.name;
+    pinValue = '';
+    renderPin();
+    document.getElementById('access-feedback').textContent = '';
+  }
+  if (id === 'scores-screen') refreshScores();
 }
 
 function showMapScreen() {
   showScreen('map-screen');
   document.getElementById('zone-panel').classList.remove('visible');
   activeZone = null;
+  codeOk = false;
+  pinValue = '';
   if (map) setTimeout(() => map.invalidateSize(), 100);
 }
 
@@ -340,8 +415,9 @@ function showMapScreen() {
 // ============================================================
 function selectTeam(team) {
   selectedTeam = team;
-  document.getElementById('card-rouge').className = 'team-card' + (team === 'rouge' ? ' selected-rouge' : '');
-  document.getElementById('card-bleu').className = 'team-card' + (team === 'bleu' ? ' selected-bleu' : '');
+  TEAMS.forEach(t => {
+    document.getElementById('card-'+t.id).className = 'team-card'+(t.id===team?' sel-'+t.id:'');
+  });
   document.getElementById('start-btn').style.display = 'block';
 }
 
@@ -350,150 +426,214 @@ function selectTeam(team) {
 // ============================================================
 function startGame() {
   showScreen('map-screen');
-  document.getElementById('my-team-label').textContent = selectedTeam === 'rouge' ? '🔴 Équipe Rouge' : '🔵 Équipe Bleue';
-
-  // Highlight my chip
-  const myChip = document.getElementById('chip-' + selectedTeam);
-  myChip.className = 'score-chip my-team-' + selectedTeam;
-
-  if (!gameStarted) {
-    gameStarted = true;
-    initMap();
-    startTimer();
-  }
+  const t = TEAMS.find(t => t.id === selectedTeam);
+  document.getElementById('my-team-label').textContent = t.emoji+' '+t.name;
+  TEAMS.forEach(t => {
+    document.getElementById('chip-'+t.id).className = 'score-chip'+(t.id===selectedTeam?' my-'+t.id:'');
+  });
+  if (!gameStarted) { gameStarted = true; initMap(); startTimer(); }
 }
 
 // ============================================================
 // MAP
 // ============================================================
 function initMap() {
-  map = L.map('map', {
-    center: [50.3362, 4.2205],
-    zoom: 16,
-    zoomControl: true,
-    attributionControl: false
-  });
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-  }).addTo(map);
-
+  map = L.map('map',{center:[50.3325,4.1995],zoom:16,zoomControl:true,attributionControl:false});
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
   ZONES.forEach(zone => {
-    const icon = createMarkerIcon(zone);
-    const marker = L.marker([zone.lat, zone.lng], { icon }).addTo(map);
-    marker.on('click', () => openZonePanel(zone));
+    const marker = L.marker([zone.lat,zone.lng],{icon:createIcon(zone)}).addTo(map);
+    marker.on('click',() => openPanel(zone));
     markers[zone.id] = marker;
   });
 }
 
-function createMarkerIcon(zone) {
+function createIcon(zone) {
   const team = zoneStates[zone.id];
-  const teamClass = team ? 'team-' + team : '';
-  const html = `<div class="zone-marker ${teamClass}">
-    <div class="icon-circle">${zone.emoji}</div>
-    <div class="icon-label">${zone.name.split(' ').slice(-1)[0]}</div>
-  </div>`;
-  return L.divIcon({ html, className: '', iconSize: [50, 58], iconAnchor: [25, 29] });
+  const tc = team ? 'team-'+team : '';
+  const html = `<div class="zone-marker ${tc}"><div class="icon-circle">${zone.emoji}</div><div class="icon-label">${zone.name.split(' ').slice(-1)[0]}</div></div>`;
+  return L.divIcon({html,className:'',iconSize:[50,58],iconAnchor:[25,29]});
 }
 
-function refreshMarker(zone) {
-  if (markers[zone.id]) {
-    markers[zone.id].setIcon(createMarkerIcon(zone));
-  }
-}
+function refreshMarker(zone) { markers[zone.id]?.setIcon(createIcon(zone)); }
 
 // ============================================================
 // ZONE PANEL
 // ============================================================
-function openZonePanel(zone) {
+function openPanel(zone) {
   activeZone = zone;
   const team = zoneStates[zone.id];
   document.getElementById('panel-emoji').textContent = zone.emoji;
   document.getElementById('panel-name').textContent = zone.name;
-  document.getElementById('panel-pts').textContent = '⭐ ' + zone.points + ' points';
-
-  let statusText = 'Libre', statusColor = '#64748b';
-  if (team === selectedTeam) { statusText = '✅ Votre zone'; statusColor = '#10b981'; }
-  else if (team) { statusText = '⚔️ Zone ennemie'; statusColor = '#ef4444'; }
-
+  document.getElementById('panel-pts').textContent = '⭐ '+zone.points+' points';
   const st = document.getElementById('panel-status');
-  st.textContent = statusText;
-  st.style.color = statusColor;
-
+  if (team === selectedTeam) { st.textContent='✅ Votre zone'; st.style.color='#10b981'; }
+  else if (team) { st.textContent='⚔️ Zone ennemie'; st.style.color='#ef4444'; }
+  else { st.textContent='Libre'; st.style.color='#64748b'; }
   document.getElementById('zone-panel').classList.add('visible');
 }
 
 // ============================================================
-// CHALLENGE
+// PIN CODE
 // ============================================================
-function startChallenge(type) {
+function renderPin() {
+  for (let i=0;i<4;i++) {
+    const el = document.getElementById('pin-'+i);
+    el.textContent = pinValue[i] || '_';
+    el.className = 'pin-digit' + (pinValue[i] ? ' filled' : '');
+  }
+}
+
+function pinPress(digit) {
+  if (pinValue.length >= 4) return;
+  pinValue += digit;
+  renderPin();
+  if (pinValue.length === 4) checkPin();
+}
+
+function pinDelete() {
+  pinValue = pinValue.slice(0,-1);
+  renderPin();
+  document.getElementById('access-feedback').textContent = '';
+}
+
+function pinClear() {
+  pinValue = '';
+  renderPin();
+  document.getElementById('access-feedback').textContent = '';
+}
+
+function checkPin() {
+  const correct = LOCATION_CODES[activeZone.id];
+  const fb = document.getElementById('access-feedback');
+  if (pinValue === correct) {
+    for (let i=0;i<4;i++) document.getElementById('pin-'+i).className='pin-digit success';
+    fb.textContent = '✅ Accès accordé !';
+    fb.style.color = '#10b981';
+    setTimeout(() => launchChallenge(), 700);
+  } else {
+    for (let i=0;i<4;i++) document.getElementById('pin-'+i).className='pin-digit error';
+    fb.textContent = '❌ Mauvais code, réessaie !';
+    fb.style.color = '#ef4444';
+    setTimeout(() => { pinValue=''; renderPin(); fb.textContent=''; }, 1000);
+  }
+}
+
+// ============================================================
+// CHALLENGE — lancé après bon code lieu
+// ============================================================
+function launchChallenge() {
   if (!activeZone) return;
-  activeChallenge = type;
-  const meta = CHALLENGES_META[type];
-  const task = activeZone.tasks[type];
+  const zc = ZONE_CHALLENGES[activeZone.id];
+  // Alterne déchiffrer / encoder selon la parité de l'id
+  const type = activeZone.id % 2 === 0 ? 'decode' : 'encode';
+  currentChallenge = type;
+  codeOk = false;
 
   document.getElementById('ch-emoji').textContent = activeZone.emoji;
   document.getElementById('ch-zone-name').textContent = activeZone.name;
 
   const badge = document.getElementById('ch-badge');
-  badge.textContent = meta.label;
-  badge.style.color = meta.color;
-  badge.style.background = meta.bg;
-  badge.style.borderColor = meta.color;
+  const taskBox = document.getElementById('ch-task-box');
+  const btn = document.getElementById('ch-btn');
+  btn.disabled = true;
+  btn.textContent = '✅ Capturer la zone';
 
-  document.getElementById('ch-task').textContent = task;
+  if (type === 'decode') {
+    const d = zc.decode;
+    badge.textContent = '🔐 Déchiffre le message';
+    badge.style.color='#c084fc'; badge.style.background='rgba(168,85,247,0.15)'; badge.style.borderColor='#a855f7';
+    taskBox.innerHTML = `
+      <div class="task-section-title">Déchiffre avec le ${CODE_NAMES[d.type]}</div>
+      <div class="code-ref"><div class="code-title">Message codé à déchiffrer</div>${d.code}</div>
+      <div class="code-ref" style="margin-top:0.5rem"><div class="code-title">Table ${CODE_NAMES[d.type]}</div>${CODE_REFS[d.type]}</div>
+      <div class="answer-box">
+        <div class="answer-title">Ta réponse</div>
+        <input class="answer-input" id="ans" type="text" placeholder="Écris le mot trouvé..." oninput="checkDecode('${d.answer}')">
+        <div class="answer-feedback" id="ans-fb"></div>
+      </div>
+      <div class="photo-note">📸 N'oublie pas de prendre une photo de toute l'équipe sur place !</div>`;
+  } else {
+    const e = zc.encode;
+    const dict = e.type==='morse'?MORSE:e.type==='templiers'?TEMPLIERS:LAPIN;
+    const correct = encodeWord(e.word, dict);
+    badge.textContent = '✍️ Encode le mot';
+    badge.style.color='#f87171'; badge.style.background='rgba(239,68,68,0.15)'; badge.style.borderColor='#ef4444';
+    taskBox.innerHTML = `
+      <div class="task-section-title">Encode avec le ${CODE_NAMES[e.type]}</div>
+      <div class="task-text">Mot à encoder : <b style="font-size:1.3rem;color:white">"${e.word}"</b></div>
+      <div class="code-ref"><div class="code-title">Table ${CODE_NAMES[e.type]}</div>${CODE_REFS[e.type]}</div>
+      <div class="answer-box">
+        <div class="answer-title">Ton code</div>
+        <input class="answer-input" id="ans" type="text" placeholder="Écris le code ici..." oninput="checkEncode('${correct.replace(/'/g,'\\x27')}')">
+        <div class="answer-feedback" id="ans-fb"></div>
+      </div>
+      <div class="photo-note">📸 N'oublie pas de prendre une photo de toute l'équipe sur place !</div>`;
+  }
   showScreen('challenge-screen');
 }
 
-function captureZone() {
-  if (!activeZone) return;
-  const btn = document.getElementById('ch-success-btn');
-  btn.textContent = '⏳ Capture en cours...';
-  btn.disabled = true;
+function checkDecode(correct) {
+  const val = document.getElementById('ans').value.trim().toUpperCase();
+  const fb = document.getElementById('ans-fb');
+  const btn = document.getElementById('ch-btn');
+  if (val === correct.toUpperCase()) {
+    fb.textContent = '🎉 Bonne réponse !'; fb.style.color='#10b981';
+    codeOk = true; btn.disabled = false;
+  } else if (val.length >= correct.length) {
+    fb.textContent = '❌ Mauvaise réponse !'; fb.style.color='#ef4444';
+    codeOk = false; btn.disabled = true;
+  } else { fb.textContent=''; btn.disabled=true; }
+}
 
+function checkEncode(correct) {
+  const val = document.getElementById('ans').value.trim();
+  const fb = document.getElementById('ans-fb');
+  const btn = document.getElementById('ch-btn');
+  const norm = s => s.replace(/\s+/g,'');
+  if (norm(val) === norm(correct)) {
+    fb.textContent = '🎉 Parfait, bon code !'; fb.style.color='#10b981';
+    codeOk = true; btn.disabled = false;
+  } else {
+    fb.textContent = val.length>2 ? '❌ Pas encore !' : ''; fb.style.color='#ef4444';
+    codeOk = false; btn.disabled = true;
+  }
+}
+
+function captureZone() {
+  if (!codeOk || !activeZone) return;
+  const btn = document.getElementById('ch-btn');
+  btn.textContent = '⏳ Capture...'; btn.disabled = true;
   setTimeout(() => {
     zoneStates[activeZone.id] = selectedTeam;
     refreshMarker(activeZone);
     updateScores();
-    const pts = activeZone.points;
-    showNotif(`✅ ${activeZone.name} capturée ! +${pts} pts`, '#10b981');
-    btn.textContent = '✅ Défi réussi !';
-    btn.disabled = false;
+    showNotif('✅ '+activeZone.name+' capturée ! +'+activeZone.points+' pts','#10b981');
+    codeOk = false;
     showMapScreen();
-  }, 1000);
+  }, 800);
 }
 
 // ============================================================
 // SCORES
 // ============================================================
-function getScore(team) {
-  return ZONES.filter(z => zoneStates[z.id] === team).reduce((a, z) => a + z.points, 0);
-}
+function getScore(team) { return ZONES.filter(z=>zoneStates[z.id]===team).reduce((a,z)=>a+z.points,0); }
 
 function updateScores() {
-  document.getElementById('score-rouge').textContent = getScore('rouge');
-  document.getElementById('score-bleu').textContent = getScore('bleu');
+  TEAMS.forEach(t => document.getElementById('score-'+t.id).textContent = getScore(t.id));
 }
 
-function refreshScoresScreen() {
-  ['rouge','bleu'].forEach(team => {
-    const captured = ZONES.filter(z => zoneStates[z.id] === team);
-    const score = captured.reduce((a,z) => a+z.points, 0);
-    document.getElementById('total-' + team).textContent = score + ' pts';
-    const container = document.getElementById('zones-' + team);
-    if (captured.length === 0) {
-      container.innerHTML = '<div class="no-zones">Aucune zone capturée</div>';
-    } else {
-      container.innerHTML = captured.map(z =>
-        `<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span style="color:${team==='rouge'?'var(--rouge)':'var(--bleu)'};font-weight:800">+${z.points}</span></div>`
-      ).join('');
-    }
+function refreshScores() {
+  TEAMS.forEach(t => {
+    const captured = ZONES.filter(z=>zoneStates[z.id]===t.id);
+    document.getElementById('total-'+t.id).textContent = captured.reduce((a,z)=>a+z.points,0)+' pts';
+    document.getElementById('zones-'+t.id).innerHTML = captured.length===0
+      ? '<div class="no-zones">Aucune zone capturée</div>'
+      : captured.map(z=>`<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span style="color:${t.color};font-weight:800">+${z.points}</span></div>`).join('');
   });
-  const free = ZONES.filter(z => !zoneStates[z.id]);
-  document.getElementById('zones-free').innerHTML = free.length === 0
-    ? '<div class="no-zones">Toutes les zones sont capturées !</div>'
-    : free.map(z => `<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span>${z.points} pts</span></div>`).join('');
+  const free = ZONES.filter(z=>!zoneStates[z.id]);
+  document.getElementById('zones-free').innerHTML = free.length===0
+    ? '<div class="no-zones" style="color:var(--green)">Toutes capturées ! 🎉</div>'
+    : free.map(z=>`<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span>${z.points} pts</span></div>`).join('');
 }
 
 // ============================================================
@@ -501,32 +641,27 @@ function refreshScoresScreen() {
 // ============================================================
 function startTimer() {
   timerInterval = setInterval(() => {
-    timerSeconds--;
-    const m = String(Math.floor(timerSeconds / 60)).padStart(2,'0');
-    const s = String(timerSeconds % 60).padStart(2,'0');
+    timerSec--;
+    const m = String(Math.floor(timerSec/60)).padStart(2,'0');
+    const s = String(timerSec%60).padStart(2,'0');
     document.getElementById('timer').textContent = `⏱ ${m}:${s}`;
-    if (timerSeconds <= 0) {
-      clearInterval(timerInterval);
-      endGame();
-    }
-  }, 1000);
+    if (timerSec<=0) { clearInterval(timerInterval); endGame(); }
+  },1000);
 }
 
 function endGame() {
-  const rScore = getScore('rouge'), bScore = getScore('bleu');
-  let msg = rScore > bScore ? '🔴 Équipe Rouge gagne !' : bScore > rScore ? '🔵 Équipe Bleue gagne !' : '🤝 Match nul !';
-  showNotif(msg + ` R:${rScore} B:${bScore}`, '#f59e0b');
+  const scores = TEAMS.map(t=>({...t,score:getScore(t.id)})).sort((a,b)=>b.score-a.score);
+  showNotif(`🏆 ${scores[0].emoji} gagne avec ${scores[0].score} pts !`,'#f59e0b');
 }
 
 // ============================================================
-// NOTIFICATION
+// NOTIF
 // ============================================================
-function showNotif(msg, color = '#10b981') {
-  const el = document.getElementById('notif');
-  el.textContent = msg;
-  el.style.background = color;
+function showNotif(msg,color='#10b981'){
+  const el=document.getElementById('notif');
+  el.textContent=msg; el.style.background=color;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 3000);
+  setTimeout(()=>el.classList.remove('show'),3500);
 }
 </script>
 </body>

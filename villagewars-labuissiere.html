@@ -4,12 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>VillageWars – Labuissière</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--rouge:#ef4444;--bleu:#3b82f6;--vert:#22c55e;--bg:#0c1220;--card:#131d30;--border:rgba(255,255,255,0.08);--text:#e2e8f0;--muted:#64748b;--gold:#f59e0b;--green:#10b981;--purple:#a855f7}
+:root{--rouge:#ef4444;--bleu:#3b82f6;--vert:#22c55e;--bg:#0c1220;--card:#131d30;--card2:#1a2640;--border:rgba(255,255,255,0.08);--text:#e2e8f0;--muted:#64748b;--gold:#f59e0b;--green:#10b981;--purple:#a855f7}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito',sans-serif;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100vh;max-width:480px;margin:0 auto}
 .screen{display:none;flex-direction:column;height:100%;overflow-y:auto}
@@ -39,41 +37,53 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 .team-card .t-emoji{font-size:2rem;margin-bottom:0.4rem}
 .team-card .t-name{font-weight:900;font-size:0.85rem}
 
-/* MAP */
-#map-screen{position:relative;overflow:hidden}
-#header{padding:0.6rem 1rem 0.3rem;display:flex;justify-content:space-between;align-items:center;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+/* MAIN SCREEN */
+#main-screen{position:relative}
+#header{padding:0.6rem 1rem 0.4rem;display:flex;justify-content:space-between;align-items:center;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
 .game-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:1px}
 .game-title span{color:var(--bleu)}
 .timer-box{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:0.25rem 0.7rem;font-weight:900;font-size:1.1rem;color:var(--gold)}
-#scores-bar{display:flex;gap:0.3rem;padding:0.4rem 0.6rem;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
-.score-chip{flex:1;background:rgba(255,255,255,0.04);border:1.5px solid var(--border);border-radius:10px;padding:0.3rem 0.4rem;display:flex;justify-content:space-between;align-items:center;font-size:0.7rem}
-.score-chip.my-rouge{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.5)}
-.score-chip.my-bleu{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.5)}
-.score-chip.my-vert{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.5)}
-.score-val{font-weight:900;font-size:0.9rem}
-#map{flex:1;z-index:1}
-.leaflet-container{background:#1a2e1a !important}
 
-/* ZONE PANEL */
-#zone-panel{background:var(--card);border-top:1px solid var(--border);padding:0.8rem 1rem;flex-shrink:0;display:none}
-#zone-panel.visible{display:block}
-.zone-header{display:flex;align-items:center;gap:0.7rem;margin-bottom:0.8rem}
-.zone-emoji-big{font-size:2rem}
-.zone-title{font-weight:900;font-size:1rem}
-.zone-pts{font-size:0.75rem;color:var(--gold)}
-.zone-status{font-size:0.75rem;font-weight:700;margin-left:auto}
-.panel-access-btn{width:100%;background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.2));border:1.5px solid rgba(99,102,241,0.4);border-radius:14px;padding:0.8rem;color:white;font-size:0.95rem;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.15s}
-.panel-access-btn:active{transform:scale(0.97)}
+/* SCORES BAR — TOUJOURS VISIBLE */
+#scores-bar{display:flex;gap:0.3rem;padding:0.4rem 0.6rem;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0}
+.score-chip{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:0.35rem 0.4rem;display:flex;flex-direction:column;align-items:center;gap:1px;background:rgba(255,255,255,0.03)}
+.score-chip.my-rouge{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.5)}
+.score-chip.my-bleu{background:rgba(59,130,246,0.12);border-color:rgba(59,130,246,0.5)}
+.score-chip.my-vert{background:rgba(34,197,94,0.12);border-color:rgba(34,197,94,0.5)}
+.chip-team{font-size:0.65rem;color:var(--muted)}
+.chip-score{font-weight:900;font-size:1rem}
+.chip-zones{font-size:0.6rem;color:var(--muted)}
+
+/* ZONES LIST */
+#zones-list{flex:1;overflow-y:auto;padding:0.8rem}
+#zones-list h3{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px;color:var(--muted);margin-bottom:0.6rem;padding:0 0.2rem}
+.zone-item{display:flex;align-items:center;gap:0.8rem;background:var(--card2);border:1.5px solid var(--border);border-radius:16px;padding:0.8rem 1rem;margin-bottom:0.6rem;cursor:pointer;transition:all 0.15s;position:relative;overflow:hidden}
+.zone-item:active{transform:scale(0.98)}
+.zone-item.owned{border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.06)}
+.zone-item.enemy{border-color:rgba(239,68,68,0.35);background:rgba(239,68,68,0.05)}
+.zone-item.free{border-color:rgba(255,255,255,0.06)}
+.zone-item .z-emoji{font-size:1.8rem;flex-shrink:0}
+.zone-item .z-info{flex:1}
+.zone-item .z-name{font-weight:900;font-size:0.95rem}
+.zone-item .z-pts{font-size:0.72rem;color:var(--gold)}
+.zone-item .z-status{font-size:0.72rem;font-weight:700;margin-top:1px}
+.zone-item .z-arrow{font-size:1.2rem;color:var(--muted);flex-shrink:0}
+.zone-strip{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px}
+
+/* BOTTOM NAV */
+#bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--card);flex-shrink:0}
+.nav-btn{flex:1;background:none;border:none;color:var(--muted);padding:0.6rem 0.5rem;cursor:pointer;font-size:0.72rem;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px}
+.nav-btn .nav-icon{font-size:1.2rem}
 
 /* ACCESS CODE SCREEN */
 #access-screen{align-items:center;justify-content:center;padding:2rem;background:var(--bg);text-align:center;gap:0.8rem}
-.access-zone-emoji{font-size:4rem}
-.access-zone-name{font-size:1.1rem;color:var(--muted);font-weight:700}
-.access-box{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:1.5rem;max-width:320px;width:100%}
-.access-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:1px;margin-bottom:0.3rem}
-.access-desc{color:var(--muted);font-size:0.85rem;margin-bottom:1rem;line-height:1.5}
-.pin-display{display:flex;gap:0.6rem;justify-content:center;margin-bottom:1rem}
-.pin-digit{width:52px;height:62px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:900;transition:all 0.15s}
+.ac-emoji{font-size:4rem}
+.ac-name{font-size:1.1rem;color:var(--muted);font-weight:700}
+.access-box{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:1.5rem;max-width:320px;width:100%}
+.access-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:1px;margin-bottom:0.3rem}
+.access-desc{color:var(--muted);font-size:0.82rem;margin-bottom:1rem;line-height:1.5}
+.pin-display{display:flex;gap:0.4rem;justify-content:center;margin-bottom:1rem}
+.pin-digit{width:40px;height:50px;background:rgba(255,255,255,0.06);border:2px solid rgba(255,255,255,0.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;transition:all 0.15s}
 .pin-digit.filled{background:rgba(99,102,241,0.2);border-color:rgba(99,102,241,0.6);color:white}
 .pin-digit.error{background:rgba(239,68,68,0.2);border-color:var(--rouge);animation:shake 0.4s ease}
 .pin-digit.success{background:rgba(16,185,129,0.2);border-color:var(--green)}
@@ -81,12 +91,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 .num-btn{background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.1);border-radius:14px;padding:0.9rem;font-size:1.3rem;font-weight:900;color:white;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.1s}
 .num-btn:active{transform:scale(0.9);background:rgba(255,255,255,0.15)}
 .num-btn.del{color:#f87171;border-color:rgba(239,68,68,0.25)}
-.access-feedback{font-size:0.9rem;font-weight:700;min-height:1.2rem;margin-top:0.5rem}
+.access-feedback{font-size:0.88rem;font-weight:700;min-height:1.2rem;margin-top:0.5rem}
 
 /* CHALLENGE SCREEN */
 #challenge-screen{align-items:center;justify-content:flex-start;padding:1.5rem;background:var(--bg);text-align:center;gap:0.7rem;overflow-y:auto}
-.ch-zone-emoji{font-size:3.5rem;margin-top:0.5rem}
-.ch-zone-name{font-size:1rem;color:var(--muted);font-weight:700}
+.ch-emoji{font-size:3.5rem;margin-top:0.5rem}
+.ch-name{font-size:1rem;color:var(--muted);font-weight:700}
 .challenge-badge{border-radius:12px;padding:0.35rem 1rem;font-weight:800;font-size:0.88rem;border:2px solid}
 .task-box{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:20px;padding:1.2rem;max-width:360px;font-size:0.95rem;line-height:1.6;text-align:left;width:100%}
 .task-section-title{font-weight:900;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:0.4rem}
@@ -104,25 +114,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 .btn-success:disabled{background:#1a2e22;color:#374151;cursor:not-allowed}
 .btn-cancel{background:rgba(255,255,255,0.07);color:var(--muted);border:none;border-radius:14px;padding:0.9rem 1.2rem;cursor:pointer;font-size:0.9rem;font-family:'Nunito',sans-serif}
 
-/* BOTTOM NAV */
-#bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--card);flex-shrink:0}
-.nav-btn{flex:1;background:none;border:none;color:var(--muted);padding:0.6rem 0.5rem;cursor:pointer;font-size:0.72rem;font-family:'Nunito',sans-serif;display:flex;flex-direction:column;align-items:center;gap:2px}
-.nav-btn .nav-icon{font-size:1.2rem}
-
-/* SCORES */
-#scores-screen{padding:1.2rem;background:var(--bg);gap:0.8rem}
-#scores-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2rem}
-.score-team-card{border-radius:20px;padding:1.2rem;border:2px solid;margin-bottom:0}
-.score-team-card.rouge{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3)}
-.score-team-card.bleu{background:rgba(59,130,246,0.08);border-color:rgba(59,130,246,0.3)}
-.score-team-card.vert{background:rgba(34,197,94,0.08);border-color:rgba(34,197,94,0.3)}
-.score-team-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.6rem}
-.score-team-name{font-weight:900;font-size:1rem}
-.score-team-total{font-weight:900;font-size:1.5rem}
-.score-zone-row{display:flex;justify-content:space-between;font-size:0.82rem;padding:0.2rem 0;border-top:1px solid rgba(255,255,255,0.05);color:#cbd5e1}
-.no-zones{color:var(--muted);font-size:0.82rem}
-.free-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:16px;padding:1rem}
-
 /* RULES */
 #rules-screen{padding:1.2rem;background:var(--bg);gap:0.8rem}
 #rules-screen h2{font-family:'Bebas Neue',sans-serif;font-size:2rem}
@@ -132,19 +123,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 .rule-desc{color:var(--muted);font-size:0.83rem;line-height:1.5}
 .codes-card{background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.2);border-radius:16px;padding:1rem}
 .codes-card-title{font-weight:900;color:#c084fc;margin-bottom:0.6rem}
-.code-row{font-size:0.82rem;color:#cbd5e1;padding:0.25rem 0;border-top:1px solid rgba(255,255,255,0.05)}
+.code-row-r{font-size:0.82rem;color:#cbd5e1;padding:0.25rem 0;border-top:1px solid rgba(255,255,255,0.05)}
 
 /* NOTIF */
 #notif{position:fixed;top:1rem;left:50%;transform:translateX(-50%) translateY(-80px);color:white;border-radius:14px;padding:0.7rem 1.4rem;font-weight:800;font-size:0.88rem;box-shadow:0 8px 24px rgba(0,0,0,0.5);z-index:9999;white-space:nowrap;transition:transform 0.3s ease;pointer-events:none;max-width:90vw;text-align:center}
 #notif.show{transform:translateX(-50%) translateY(0)}
-
-/* MAP MARKERS */
-.zone-marker{display:flex;flex-direction:column;align-items:center;cursor:pointer}
-.zone-marker .icon-circle{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:rgba(20,40,70,0.9);box-shadow:0 3px 12px rgba(0,0,0,0.5)}
-.zone-marker .icon-label{font-size:0.56rem;font-weight:800;background:rgba(0,0,0,0.8);border-radius:6px;padding:1px 5px;margin-top:2px;white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis;color:#cbd5e1}
-.zone-marker.team-rouge .icon-circle{background:rgba(239,68,68,0.85);border-color:#ef4444;box-shadow:0 3px 16px rgba(239,68,68,0.5)}
-.zone-marker.team-bleu .icon-circle{background:rgba(59,130,246,0.85);border-color:#3b82f6;box-shadow:0 3px 16px rgba(59,130,246,0.5)}
-.zone-marker.team-vert .icon-circle{background:rgba(34,197,94,0.85);border-color:#22c55e;box-shadow:0 3px 16px rgba(34,197,94,0.5)}
 
 @keyframes pop{0%{transform:scale(0.6);opacity:0}80%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
@@ -164,14 +147,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
     <span class="tag">⚔️ 3 Équipes</span>
   </div>
   <button class="btn-primary" onclick="showScreen('team')">JOUER →</button>
-  <p style="color:var(--muted);font-size:0.75rem;margin-top:0.5rem">3 équipes · Plein air · 1h30</p>
+  <p style="color:var(--muted);font-size:0.75rem;margin-top:0.5rem">3 équipes · Plein air · 1h30 · 12 zones</p>
 </div>
 
 <!-- TEAM SELECT -->
 <div id="team" class="screen">
-  <h2>Choisis ton équipe</h2>
-  <p>Chaque joueur choisit son camp sur son téléphone</p>
-  <div class="team-cards">
+  <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:1px;padding:1.5rem 1.5rem 0;text-align:center">Choisis ton équipe</h2>
+  <p style="color:var(--muted);font-size:0.88rem;text-align:center;padding:0.3rem 1rem 0">Chaque joueur choisit son camp</p>
+  <div style="display:flex;gap:0.8rem;margin:1rem 1.5rem;justify-content:center">
     <div class="team-card" id="card-rouge" onclick="selectTeam('rouge')">
       <div class="t-emoji">🔴</div><div class="t-name">Équipe Rouge</div>
     </div>
@@ -182,12 +165,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
       <div class="t-emoji">🟢</div><div class="t-name">Équipe Verte</div>
     </div>
   </div>
-  <button class="btn-primary" id="start-btn" style="display:none" onclick="startGame()">C'est parti ! 🚀</button>
-  <button class="btn-ghost" onclick="showScreen('splash')">← Retour</button>
+  <div style="padding:0 1.5rem;display:flex;flex-direction:column;align-items:center;gap:0.8rem">
+    <button class="btn-primary" id="start-btn" style="display:none" onclick="startGame()">C'est parti ! 🚀</button>
+    <button class="btn-ghost" onclick="showScreen('splash')">← Retour</button>
+  </div>
 </div>
 
-<!-- MAP SCREEN -->
-<div id="map-screen" class="screen">
+<!-- MAIN SCREEN -->
+<div id="main-screen" class="screen">
   <div id="header">
     <div>
       <div class="game-title">🗺️ VILLAGE<span>WARS</span></div>
@@ -195,40 +180,46 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
     </div>
     <div class="timer-box" id="timer">⏱ 90:00</div>
   </div>
+
+  <!-- SCORES TOUJOURS VISIBLES -->
   <div id="scores-bar">
-    <div class="score-chip" id="chip-rouge"><span>🔴</span><span class="score-val" id="score-rouge" style="color:var(--rouge)">0</span></div>
-    <div class="score-chip" id="chip-bleu"><span>🔵</span><span class="score-val" id="score-bleu" style="color:var(--bleu)">0</span></div>
-    <div class="score-chip" id="chip-vert"><span>🟢</span><span class="score-val" id="score-vert" style="color:var(--vert)">0</span></div>
-  </div>
-  <div id="map"></div>
-  <div id="zone-panel">
-    <div class="zone-header">
-      <div class="zone-emoji-big" id="panel-emoji"></div>
-      <div><div class="zone-title" id="panel-name"></div><div class="zone-pts" id="panel-pts"></div></div>
-      <div class="zone-status" id="panel-status"></div>
+    <div class="score-chip" id="chip-rouge">
+      <div class="chip-team">🔴 Rouge</div>
+      <div class="chip-score" id="score-rouge" style="color:var(--rouge)">0</div>
+      <div class="chip-zones" id="zones-count-rouge">0 zone</div>
     </div>
-    <button class="panel-access-btn" onclick="showScreen('access-screen')">🔢 Entrer le code du lieu pour jouer</button>
+    <div class="score-chip" id="chip-bleu">
+      <div class="chip-team">🔵 Bleu</div>
+      <div class="chip-score" id="score-bleu" style="color:var(--bleu)">0</div>
+      <div class="chip-zones" id="zones-count-bleu">0 zone</div>
+    </div>
+    <div class="score-chip" id="chip-vert">
+      <div class="chip-team">🟢 Vert</div>
+      <div class="chip-score" id="score-vert" style="color:var(--vert)">0</div>
+      <div class="chip-zones" id="zones-count-vert">0 zone</div>
+    </div>
   </div>
+
+  <!-- LISTE DES ZONES -->
+  <div id="zones-list">
+    <h3>⚔️ 12 Zones à conquérir</h3>
+    <div id="zones-container"></div>
+  </div>
+
   <div id="bottom-nav">
-    <button class="nav-btn" onclick="showMapScreen()"><span class="nav-icon">🗺️</span>Carte</button>
-    <button class="nav-btn" onclick="showScreen('scores-screen')"><span class="nav-icon">🏆</span>Scores</button>
+    <button class="nav-btn" onclick="showScreen('main-screen');renderZones()"><span class="nav-icon">⚔️</span>Zones</button>
     <button class="nav-btn" onclick="showScreen('rules-screen')"><span class="nav-icon">📖</span>Règles</button>
   </div>
 </div>
 
 <!-- ACCESS CODE SCREEN -->
 <div id="access-screen" class="screen">
-  <div class="access-zone-emoji" id="ac-emoji"></div>
-  <div class="access-zone-name" id="ac-name"></div>
+  <div class="ac-emoji" id="ac-emoji"></div>
+  <div class="ac-name" id="ac-name"></div>
   <div class="access-box">
     <div class="access-title">🔢 Code du lieu</div>
-    <div class="access-desc">Trouve le code affiché sur place et entre-le pour accéder aux défis !</div>
-    <div class="pin-display" id="pin-display">
-      <div class="pin-digit" id="pin-0">_</div>
-      <div class="pin-digit" id="pin-1">_</div>
-      <div class="pin-digit" id="pin-2">_</div>
-      <div class="pin-digit" id="pin-3">_</div>
-    </div>
+    <div class="access-desc">Trouve le code à 6 chiffres affiché sur place !</div>
+    <div class="pin-display" id="pin-display"></div>
     <div class="access-feedback" id="access-feedback"></div>
     <div class="numpad">
       <button class="num-btn" onclick="pinPress('1')">1</button>
@@ -240,63 +231,43 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
       <button class="num-btn" onclick="pinPress('7')">7</button>
       <button class="num-btn" onclick="pinPress('8')">8</button>
       <button class="num-btn" onclick="pinPress('9')">9</button>
-      <button class="num-btn" style="grid-column:1" onclick="pinClear()">✕</button>
+      <button class="num-btn" onclick="pinClear()">✕</button>
       <button class="num-btn" onclick="pinPress('0')">0</button>
       <button class="num-btn del" onclick="pinDelete()">⌫</button>
     </div>
   </div>
-  <button class="btn-ghost" onclick="showMapScreen()">← Retour</button>
+  <button class="btn-ghost" onclick="showScreen('main-screen');renderZones()">← Retour</button>
 </div>
 
 <!-- CHALLENGE SCREEN -->
 <div id="challenge-screen" class="screen">
-  <div class="ch-zone-emoji" id="ch-emoji"></div>
-  <div class="ch-zone-name" id="ch-zone-name"></div>
+  <div class="ch-emoji" id="ch-emoji"></div>
+  <div class="ch-name" id="ch-name"></div>
   <div class="challenge-badge" id="ch-badge"></div>
   <div class="task-box" id="ch-task-box"></div>
   <div class="challenge-actions">
-    <button class="btn-success" id="ch-btn" onclick="captureZone()">✅ Capturer la zone</button>
-    <button class="btn-cancel" onclick="showMapScreen()">Annuler</button>
-  </div>
-</div>
-
-<!-- SCORES SCREEN -->
-<div id="scores-screen" class="screen">
-  <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
-  <h2>🏆 Scores</h2>
-  <div class="score-team-card rouge">
-    <div class="score-team-header"><span class="score-team-name">🔴 Équipe Rouge</span><span class="score-team-total" style="color:var(--rouge)" id="total-rouge">0 pts</span></div>
-    <div id="zones-rouge"><div class="no-zones">Aucune zone capturée</div></div>
-  </div>
-  <div class="score-team-card bleu" style="margin-top:0.8rem">
-    <div class="score-team-header"><span class="score-team-name">🔵 Équipe Bleue</span><span class="score-team-total" style="color:var(--bleu)" id="total-bleu">0 pts</span></div>
-    <div id="zones-bleu"><div class="no-zones">Aucune zone capturée</div></div>
-  </div>
-  <div class="score-team-card vert" style="margin-top:0.8rem">
-    <div class="score-team-header"><span class="score-team-name">🟢 Équipe Verte</span><span class="score-team-total" style="color:var(--vert)" id="total-vert">0 pts</span></div>
-    <div id="zones-vert"><div class="no-zones">Aucune zone capturée</div></div>
-  </div>
-  <div class="free-card" style="margin-top:0.8rem">
-    <div style="color:var(--muted);font-size:0.82rem;margin-bottom:0.5rem">Zones libres</div>
-    <div id="zones-free"></div>
+    <button class="btn-success" id="ch-btn" onclick="captureZone()">✅ Capturer</button>
+    <button class="btn-cancel" onclick="showScreen('main-screen');renderZones()">Annuler</button>
   </div>
 </div>
 
 <!-- RULES SCREEN -->
 <div id="rules-screen" class="screen">
-  <button class="btn-ghost" style="align-self:flex-start" onclick="showMapScreen()">← Retour</button>
-  <h2>📖 Règles</h2>
-  <div class="rule-card"><div class="rule-icon">🗺️</div><div><div class="rule-title">La Carte</div><div class="rule-desc">10 zones sont placées dans Labuissière. Chaque zone vaut entre 120 et 300 points.</div></div></div>
-  <div class="rule-card"><div class="rule-icon">🔢</div><div><div class="rule-title">Code du lieu — OBLIGATOIRE</div><div class="rule-desc">Chaque lieu a un code à 4 chiffres affiché sur place. Tu dois être physiquement là pour le voir et le saisir !</div></div></div>
-  <div class="rule-card"><div class="rule-icon">🔐</div><div><div class="rule-title">Défi Code Secret</div><div class="rule-desc">Une fois le code du lieu saisi, tu reçois un défi : déchiffrer ou encoder un message en Morse, Templiers ou Lapin. Sans la bonne réponse → pas de capture !</div></div></div>
-  <div class="rule-card"><div class="rule-icon">📸</div><div><div class="rule-title">Preuve Photo</div><div class="rule-desc">Après la capture, prenez une photo de toute l'équipe sur place comme preuve !</div></div></div>
-  <div class="rule-card"><div class="rule-icon">⚔️</div><div><div class="rule-title">Contre-attaque</div><div class="rule-desc">Une zone ennemie peut être reprise : allez sur place, entrez le code du lieu et réussissez un nouveau défi !</div></div></div>
-  <div class="rule-card"><div class="rule-icon">🏆</div><div><div class="rule-title">Victoire</div><div class="rule-desc">Après 1h30, l'équipe avec le plus de points gagne !</div></div></div>
-  <div class="codes-card">
-    <div class="codes-card-title">🔑 Les 3 codes utilisés dans les défis</div>
-    <div class="code-row"><b>Code Morse</b> · − · − (points et tirets)</div>
-    <div class="code-row"><b>Code Templiers</b> ⌐ ¬ L Γ (symboles géométriques)</div>
-    <div class="code-row"><b>Code Lapin</b> 🐰🥕🌿 (emojis animaux et nature)</div>
+  <div style="padding:1.2rem;display:flex;flex-direction:column;gap:0.8rem">
+    <button class="btn-ghost" style="align-self:flex-start" onclick="showScreen('main-screen');renderZones()">← Retour</button>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem">📖 Règles</h2>
+    <div class="rule-card"><div class="rule-icon">🔢</div><div><div class="rule-title">Code du lieu — OBLIGATOIRE</div><div class="rule-desc">Chaque lieu cache un code à 6 chiffres. Tu dois être physiquement sur place pour le voir et l'entrer dans l'app !</div></div></div>
+    <div class="rule-card"><div class="rule-icon">🔐</div><div><div class="rule-title">Défi Code Secret</div><div class="rule-desc">Après le code du lieu, un défi t'attend : déchiffrer ou encoder un message en Morse, Templiers ou Lapin. Sans bonne réponse → pas de capture !</div></div></div>
+    <div class="rule-card"><div class="rule-icon">📸</div><div><div class="rule-title">Preuve Photo</div><div class="rule-desc">Prenez une photo de toute l'équipe sur place comme preuve de présence !</div></div></div>
+    <div class="rule-card"><div class="rule-icon">⚔️</div><div><div class="rule-title">Contre-attaque</div><div class="rule-desc">Les zones ennemies sont indiquées en rouge dans la liste. Allez sur place, entrez le code et réussissez un défi pour les reprendre !</div></div></div>
+    <div class="rule-card"><div class="rule-icon">📊</div><div><div class="rule-title">Scores en direct</div><div class="rule-desc">Les points de toutes les équipes sont visibles en permanence en haut de l'écran. Surveille tes adversaires !</div></div></div>
+    <div class="rule-card"><div class="rule-icon">🏆</div><div><div class="rule-title">Victoire</div><div class="rule-desc">Après 1h30, l'équipe avec le plus de points gagne !</div></div></div>
+    <div class="codes-card">
+      <div class="codes-card-title">🔑 Les 3 codes secrets utilisés</div>
+      <div class="code-row-r"><b>Code Morse</b> · − · − (points et tirets)</div>
+      <div class="code-row-r"><b>Code Templiers</b> ⌐ ¬ L Γ (symboles géométriques)</div>
+      <div class="code-row-r"><b>Code Lapin</b> 🐰🥕🌿 (emojis nature)</div>
+    </div>
   </div>
 </div>
 
@@ -305,30 +276,27 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito
 
 <script>
 // ============================================================
-// CODES DES LIEUX (à coller sur place)
+// CODES DES LIEUX (6 chiffres)
 // ============================================================
 const LOCATION_CODES = {
-  1:'1847', 2:'2391', 3:'5028', 4:'7413', 5:'3672',
-  6:'9054', 7:'4817', 8:'6203', 9:'8436', 10:'5791'
+  1:'184731', 2:'239158', 3:'502847', 4:'741362',
+  5:'367209', 6:'905413', 7:'481726', 8:'620394',
+  9:'843651', 10:'579182', 11:'263847', 12:'739516'
 };
 
 // ============================================================
-// TABLES DE CODES SECRETS
+// CODES SECRETS
 // ============================================================
 const MORSE = {A:'·−',B:'−···',C:'−·−·',D:'−··',E:'·',F:'··−·',G:'−−·',H:'····',I:'··',J:'·−−−',K:'−·−',L:'·−··',M:'−−',N:'−·',O:'−−−',P:'·−−·',Q:'−−·−',R:'·−·',S:'···',T:'−',U:'··−',V:'···−',W:'·−−',X:'−··−',Y:'−·−−',Z:'−−··'};
 const TEMPLIERS = {A:'⌐',B:'⌐·',C:'¬',D:'¬·',E:'L',F:'L·',G:'Γ',H:'Γ·',I:'⌐⌐',J:'⌐⌐·',K:'Π',L:'Π·',M:'⊓',N:'⊓·',O:'⊏',P:'⊏·',Q:'⊐',R:'⊐·',S:'⊔',T:'⊔·',U:'⊣',V:'⊣·',W:'⊢',X:'⊢·',Y:'⊤',Z:'⊤·'};
 const LAPIN = {A:'🐰',B:'🥕',C:'🌿',D:'🐾',E:'🍀',F:'🌸',G:'🐇',H:'🌾',I:'🌻',J:'🍃',K:'🌷',L:'🌼',M:'🍁',N:'🦋',O:'🌺',P:'🌹',Q:'🌴',R:'🍂',S:'🌱',T:'🌝',U:'🌙',V:'⭐',W:'🌟',X:'💫',Y:'✨',Z:'🌈'};
-
 const CODE_NAMES = {morse:'Code Morse 📡',templiers:'Code Templiers ⚔️',lapin:'Code Lapin 🐰'};
 const CODE_REFS = {
   morse:'A·− B−··· C−·−· D−·· E· F··−· G−−· H···· I·· J·−−− K−·− L·−·· M−− N−· O−−− P·−−· Q−−·− R·−· S··· T− U··− V···− W·−− X−··− Y−·−− Z−−··',
   templiers:'A⌐ B⌐· C¬ D¬· EL FL· GΓ HΓ· I⌐⌐ J⌐⌐· KΠ LΠ· M⊓ N⊓· O⊏ P⊏· Q⊐ R⊐· S⊔ T⊔· U⊣ V⊣· W⊢ X⊢· Y⊤ Z⊤·',
   lapin:'A🐰 B🥕 C🌿 D🐾 E🍀 F🌸 G🐇 H🌾 I🌻 J🍃 K🌷 L🌼 M🍁 N🦋 O🌺 P🌹 Q🌴 R🍂 S🌱 T🌝 U🌙 V⭐ W🌟 X💫 Y✨ Z🌈'
 };
-
-function encodeWord(word, dict) {
-  return word.toUpperCase().split('').filter(c=>dict[c]).map(c=>dict[c]).join(' ');
-}
+function encodeWord(word,dict){return word.toUpperCase().split('').filter(c=>dict[c]).map(c=>dict[c]).join(' ')}
 
 // ============================================================
 // DÉFIS PAR ZONE
@@ -337,29 +305,33 @@ const ZONE_CHALLENGES = {
   1:{decode:{type:'morse',code:'··· −−− ···',answer:'SOS'},encode:{type:'lapin',word:'ETE'},photo:"Toute l'équipe fait une pose devant l'église !"},
   2:{decode:{type:'lapin',code:'⭐ 🌻 🍀',answer:'VIE'},encode:{type:'morse',word:'AMI'},photo:"Trouvez la tombe la plus ancienne et photographiez-la avec respect."},
   3:{decode:{type:'morse',code:'−−· · ·−· ·',answer:'GARE'},encode:{type:'templiers',word:'TRAIN'},photo:"Recréez une scène de voyageurs en attente du train !"},
-  4:{decode:{type:'templiers',code:'¬ ·· ⊔· 🍀',answer:'CITE'},encode:{type:'lapin',word:'MAISON'},photo:"Photographiez le détail architectural le plus original de la cité."},
-  5:{decode:{type:'lapin',code:'🍀 🌺 🌙',answer:'EOU'},encode:{type:'morse',word:'EAU'},photo:"Photo créative avec l'écluse et la Sambre en arrière-plan !"},
-  6:{decode:{type:'morse',code:'··−· · ⊔· ·',answer:'FETE'},encode:{type:'lapin',word:'MUSIQUE'},photo:"Toute l'équipe chante sous le kiosque !"},
+  4:{decode:{type:'lapin',code:'🌿 🌻 🌝 🍀',answer:'CITE'},encode:{type:'lapin',word:'MAISON'},photo:"Photographiez le détail architectural le plus original de la cité."},
+  5:{decode:{type:'morse',code:'· −·· −−· ·',answer:'EDGE'},encode:{type:'morse',word:'EAU'},photo:"Photo créative avec l'écluse et la Sambre en arrière-plan !"},
+  6:{decode:{type:'templiers',code:'L· L Γ·',answer:'FEG'},encode:{type:'lapin',word:'FETE'},photo:"Toute l'équipe chante sous le kiosque !"},
   7:{decode:{type:'lapin',code:'🌺 🦋 🐾 🍀',answer:'ONDE'},encode:{type:'morse',word:'EAU'},photo:"Photo de groupe avec le reflet de l'équipe dans la Sambre !"},
-  8:{decode:{type:'morse',code:'−·· · −· ⊔·',answer:'DENT'},encode:{type:'templiers',word:'SOIN'},photo:"Toute l'équipe avec le plus grand sourire devant la façade !"},
+  8:{decode:{type:'morse',code:'−·· · −· −',answer:'DENT'},encode:{type:'templiers',word:'SOIN'},photo:"Toute l'équipe avec le plus grand sourire devant la façade !"},
   9:{decode:{type:'lapin',code:'🍂 🌺 🌱 🍀',answer:'ROSE'},encode:{type:'lapin',word:'FLEUR'},photo:"Chaque joueur tient une fleur imaginaire — soyez créatifs !"},
-  10:{decode:{type:'morse',code:'···− −−− ⊔· ·',answer:'VOTE'},encode:{type:'templiers',word:'VILLAGE'},photo:"Photo officielle 'style cérémonie' devant la salle communale !"}
+  10:{decode:{type:'morse',code:'···− ·−· ⊔·',answer:'VRT'},encode:{type:'templiers',word:'VILLAGE'},photo:"Photo officielle 'style cérémonie' devant la salle communale !"},
+  11:{decode:{type:'templiers',code:'L· ⊐· ⌐ ⊔·',answer:'FRAS'},encode:{type:'morse',word:'ROCHE'},photo:"Photographiez l'escalier le plus impressionnant de la carrière !"},
+  12:{decode:{type:'lapin',code:'🌹 🌺 🦋 🌝',answer:'PONT'},encode:{type:'lapin',word:'TRAIN'},photo:"Toute l'équipe pose sur le pont avec le chemin de fer visible !"}
 };
 
 // ============================================================
-// ZONES GPS — Labuissière, Merbes-le-Château 6567
+// ZONES
 // ============================================================
 const ZONES = [
-  {id:1,name:"L'Église",emoji:"⛪",lat:50.3318,lng:4.1985,points:250},
-  {id:2,name:"Le Cimetière",emoji:"🪦",lat:50.3315,lng:4.1980,points:150},
-  {id:3,name:"La Gare",emoji:"🚉",lat:50.3355,lng:4.2025,points:200},
-  {id:4,name:"La Cité",emoji:"🏘️",lat:50.3325,lng:4.1970,points:180},
-  {id:5,name:"L'Écluse",emoji:"⚓",lat:50.3308,lng:4.2000,points:300},
-  {id:6,name:"Le Kiosque",emoji:"🎪",lat:50.3320,lng:4.1990,points:120},
-  {id:7,name:"La Sambre",emoji:"🌊",lat:50.3305,lng:4.2010,points:200},
-  {id:8,name:"Santé Sourire",emoji:"🦷",lat:50.3322,lng:4.1975,points:150},
-  {id:9,name:"Fleuriste Defossez",emoji:"💐",lat:50.3328,lng:4.1982,points:130},
-  {id:10,name:"Salle Communale",emoji:"🏛️",lat:50.3318,lng:4.1993,points:220},
+  {id:1,name:"L'Église",emoji:"⛪",points:250},
+  {id:2,name:"Le Cimetière",emoji:"🪦",points:150},
+  {id:3,name:"La Gare",emoji:"🚉",points:200},
+  {id:4,name:"La Cité",emoji:"🏘️",points:180},
+  {id:5,name:"L'Écluse",emoji:"⚓",points:300},
+  {id:6,name:"Le Kiosque",emoji:"🎪",points:120},
+  {id:7,name:"La Sambre",emoji:"🌊",points:200},
+  {id:8,name:"Santé Sourire",emoji:"🦷",points:150},
+  {id:9,name:"Fleuriste Defossez",emoji:"💐",points:130},
+  {id:10,name:"Salle Communale",emoji:"🏛️",points:220},
+  {id:11,name:"Escalier Carrière",emoji:"🪨",points:280},
+  {id:12,name:"Pont Train",emoji:"🚂",points:260},
 ];
 
 const TEAMS = [
@@ -374,13 +346,10 @@ const TEAMS = [
 let selectedTeam = null;
 let zoneStates = {};
 let activeZone = null;
-let currentChallenge = null;
 let codeOk = false;
 let pinValue = '';
 let timerSec = 5400;
 let timerInterval = null;
-let map = null;
-let markers = {};
 let gameStarted = false;
 
 ZONES.forEach(z => zoneStates[z.id] = null);
@@ -398,16 +367,6 @@ function showScreen(id) {
     renderPin();
     document.getElementById('access-feedback').textContent = '';
   }
-  if (id === 'scores-screen') refreshScores();
-}
-
-function showMapScreen() {
-  showScreen('map-screen');
-  document.getElementById('zone-panel').classList.remove('visible');
-  activeZone = null;
-  codeOk = false;
-  pinValue = '';
-  if (map) setTimeout(() => map.invalidateSize(), 100);
 }
 
 // ============================================================
@@ -425,69 +384,71 @@ function selectTeam(team) {
 // GAME START
 // ============================================================
 function startGame() {
-  showScreen('map-screen');
+  showScreen('main-screen');
   const t = TEAMS.find(t => t.id === selectedTeam);
   document.getElementById('my-team-label').textContent = t.emoji+' '+t.name;
   TEAMS.forEach(t => {
     document.getElementById('chip-'+t.id).className = 'score-chip'+(t.id===selectedTeam?' my-'+t.id:'');
   });
-  if (!gameStarted) { gameStarted = true; initMap(); startTimer(); }
+  renderZones();
+  if (!gameStarted) { gameStarted = true; startTimer(); }
 }
 
 // ============================================================
-// MAP
+// RENDER ZONES LIST
 // ============================================================
-function initMap() {
-  map = L.map('map',{center:[50.3325,4.1995],zoom:16,zoomControl:true,attributionControl:false});
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
-  ZONES.forEach(zone => {
-    const marker = L.marker([zone.lat,zone.lng],{icon:createIcon(zone)}).addTo(map);
-    marker.on('click',() => openPanel(zone));
-    markers[zone.id] = marker;
-  });
+function renderZones() {
+  const container = document.getElementById('zones-container');
+  container.innerHTML = ZONES.map(zone => {
+    const team = zoneStates[zone.id];
+    let statusClass = 'free', statusText = '🔓 Libre', statusColor = 'var(--muted)', stripColor = 'transparent';
+    if (team === selectedTeam) {
+      statusClass = 'owned'; statusText = '✅ Votre zone'; statusColor = 'var(--green)'; stripColor = 'var(--green)';
+    } else if (team) {
+      const enemyTeam = TEAMS.find(t => t.id === team);
+      statusClass = 'enemy'; statusText = `⚔️ ${enemyTeam.emoji} Zone ennemie — REPRENDRE !`; statusColor = enemyTeam.color; stripColor = enemyTeam.color;
+    }
+    return `
+      <div class="zone-item ${statusClass}" onclick="clickZone(${zone.id})">
+        <div class="zone-strip" style="background:${stripColor}"></div>
+        <div class="z-emoji">${zone.emoji}</div>
+        <div class="z-info">
+          <div class="z-name">${zone.name}</div>
+          <div class="z-pts">⭐ ${zone.points} points</div>
+          <div class="z-status" style="color:${statusColor}">${statusText}</div>
+        </div>
+        <div class="z-arrow">›</div>
+      </div>`;
+  }).join('');
 }
 
-function createIcon(zone) {
-  const team = zoneStates[zone.id];
-  const tc = team ? 'team-'+team : '';
-  const html = `<div class="zone-marker ${tc}"><div class="icon-circle">${zone.emoji}</div><div class="icon-label">${zone.name.split(' ').slice(-1)[0]}</div></div>`;
-  return L.divIcon({html,className:'',iconSize:[50,58],iconAnchor:[25,29]});
-}
-
-function refreshMarker(zone) { markers[zone.id]?.setIcon(createIcon(zone)); }
-
-// ============================================================
-// ZONE PANEL
-// ============================================================
-function openPanel(zone) {
-  activeZone = zone;
-  const team = zoneStates[zone.id];
-  document.getElementById('panel-emoji').textContent = zone.emoji;
-  document.getElementById('panel-name').textContent = zone.name;
-  document.getElementById('panel-pts').textContent = '⭐ '+zone.points+' points';
-  const st = document.getElementById('panel-status');
-  if (team === selectedTeam) { st.textContent='✅ Votre zone'; st.style.color='#10b981'; }
-  else if (team) { st.textContent='⚔️ Zone ennemie'; st.style.color='#ef4444'; }
-  else { st.textContent='Libre'; st.style.color='#64748b'; }
-  document.getElementById('zone-panel').classList.add('visible');
+function clickZone(id) {
+  activeZone = ZONES.find(z => z.id === id);
+  codeOk = false;
+  pinValue = '';
+  showScreen('access-screen');
 }
 
 // ============================================================
-// PIN CODE
+// PIN CODE (6 chiffres)
 // ============================================================
 function renderPin() {
-  for (let i=0;i<4;i++) {
-    const el = document.getElementById('pin-'+i);
-    el.textContent = pinValue[i] || '_';
-    el.className = 'pin-digit' + (pinValue[i] ? ' filled' : '');
+  const display = document.getElementById('pin-display');
+  display.innerHTML = '';
+  for (let i=0;i<6;i++) {
+    const d = document.createElement('div');
+    d.className = 'pin-digit'+(pinValue[i]?' filled':'');
+    d.id = 'pin-'+i;
+    d.textContent = pinValue[i] || '_';
+    display.appendChild(d);
   }
 }
 
 function pinPress(digit) {
-  if (pinValue.length >= 4) return;
+  if (pinValue.length >= 6) return;
   pinValue += digit;
   renderPin();
-  if (pinValue.length === 4) checkPin();
+  if (pinValue.length === 6) checkPin();
 }
 
 function pinDelete() {
@@ -506,12 +467,12 @@ function checkPin() {
   const correct = LOCATION_CODES[activeZone.id];
   const fb = document.getElementById('access-feedback');
   if (pinValue === correct) {
-    for (let i=0;i<4;i++) document.getElementById('pin-'+i).className='pin-digit success';
+    for (let i=0;i<6;i++) document.getElementById('pin-'+i).className='pin-digit success';
     fb.textContent = '✅ Accès accordé !';
     fb.style.color = '#10b981';
     setTimeout(() => launchChallenge(), 700);
   } else {
-    for (let i=0;i<4;i++) document.getElementById('pin-'+i).className='pin-digit error';
+    for (let i=0;i<6;i++) document.getElementById('pin-'+i).className='pin-digit error';
     fb.textContent = '❌ Mauvais code, réessaie !';
     fb.style.color = '#ef4444';
     setTimeout(() => { pinValue=''; renderPin(); fb.textContent=''; }, 1000);
@@ -519,24 +480,22 @@ function checkPin() {
 }
 
 // ============================================================
-// CHALLENGE — lancé après bon code lieu
+// CHALLENGE
 // ============================================================
 function launchChallenge() {
   if (!activeZone) return;
   const zc = ZONE_CHALLENGES[activeZone.id];
-  // Alterne déchiffrer / encoder selon la parité de l'id
   const type = activeZone.id % 2 === 0 ? 'decode' : 'encode';
-  currentChallenge = type;
   codeOk = false;
 
   document.getElementById('ch-emoji').textContent = activeZone.emoji;
-  document.getElementById('ch-zone-name').textContent = activeZone.name;
+  document.getElementById('ch-name').textContent = activeZone.name;
 
   const badge = document.getElementById('ch-badge');
   const taskBox = document.getElementById('ch-task-box');
   const btn = document.getElementById('ch-btn');
   btn.disabled = true;
-  btn.textContent = '✅ Capturer la zone';
+  btn.textContent = '✅ Capturer';
 
   if (type === 'decode') {
     const d = zc.decode;
@@ -544,30 +503,30 @@ function launchChallenge() {
     badge.style.color='#c084fc'; badge.style.background='rgba(168,85,247,0.15)'; badge.style.borderColor='#a855f7';
     taskBox.innerHTML = `
       <div class="task-section-title">Déchiffre avec le ${CODE_NAMES[d.type]}</div>
-      <div class="code-ref"><div class="code-title">Message codé à déchiffrer</div>${d.code}</div>
+      <div class="code-ref"><div class="code-title">Message codé</div>${d.code}</div>
       <div class="code-ref" style="margin-top:0.5rem"><div class="code-title">Table ${CODE_NAMES[d.type]}</div>${CODE_REFS[d.type]}</div>
       <div class="answer-box">
         <div class="answer-title">Ta réponse</div>
         <input class="answer-input" id="ans" type="text" placeholder="Écris le mot trouvé..." oninput="checkDecode('${d.answer}')">
         <div class="answer-feedback" id="ans-fb"></div>
       </div>
-      <div class="photo-note">📸 N'oublie pas de prendre une photo de toute l'équipe sur place !</div>`;
+      <div class="photo-note">📸 Prenez une photo de toute l'équipe sur place comme preuve !</div>`;
   } else {
     const e = zc.encode;
     const dict = e.type==='morse'?MORSE:e.type==='templiers'?TEMPLIERS:LAPIN;
-    const correct = encodeWord(e.word, dict);
+    const correct = encodeWord(e.word,dict);
     badge.textContent = '✍️ Encode le mot';
     badge.style.color='#f87171'; badge.style.background='rgba(239,68,68,0.15)'; badge.style.borderColor='#ef4444';
     taskBox.innerHTML = `
       <div class="task-section-title">Encode avec le ${CODE_NAMES[e.type]}</div>
-      <div class="task-text">Mot à encoder : <b style="font-size:1.3rem;color:white">"${e.word}"</b></div>
+      <div class="task-text">Mot à encoder : <b style="font-size:1.2rem;color:white">"${e.word}"</b></div>
       <div class="code-ref"><div class="code-title">Table ${CODE_NAMES[e.type]}</div>${CODE_REFS[e.type]}</div>
       <div class="answer-box">
         <div class="answer-title">Ton code</div>
-        <input class="answer-input" id="ans" type="text" placeholder="Écris le code ici..." oninput="checkEncode('${correct.replace(/'/g,'\\x27')}')">
+        <input class="answer-input" id="ans" type="text" placeholder="Écris le code ici..." oninput="checkEncode('${correct.replace(/\\/g,'\\\\').replace(/'/g,'\\x27')}')">
         <div class="answer-feedback" id="ans-fb"></div>
       </div>
-      <div class="photo-note">📸 N'oublie pas de prendre une photo de toute l'équipe sur place !</div>`;
+      <div class="photo-note">📸 Prenez une photo de toute l'équipe sur place comme preuve !</div>`;
   }
   showScreen('challenge-screen');
 }
@@ -577,11 +536,9 @@ function checkDecode(correct) {
   const fb = document.getElementById('ans-fb');
   const btn = document.getElementById('ch-btn');
   if (val === correct.toUpperCase()) {
-    fb.textContent = '🎉 Bonne réponse !'; fb.style.color='#10b981';
-    codeOk = true; btn.disabled = false;
+    fb.textContent='🎉 Bonne réponse !'; fb.style.color='#10b981'; codeOk=true; btn.disabled=false;
   } else if (val.length >= correct.length) {
-    fb.textContent = '❌ Mauvaise réponse !'; fb.style.color='#ef4444';
-    codeOk = false; btn.disabled = true;
+    fb.textContent='❌ Mauvaise réponse !'; fb.style.color='#ef4444'; codeOk=false; btn.disabled=true;
   } else { fb.textContent=''; btn.disabled=true; }
 }
 
@@ -590,50 +547,37 @@ function checkEncode(correct) {
   const fb = document.getElementById('ans-fb');
   const btn = document.getElementById('ch-btn');
   const norm = s => s.replace(/\s+/g,'');
-  if (norm(val) === norm(correct)) {
-    fb.textContent = '🎉 Parfait, bon code !'; fb.style.color='#10b981';
-    codeOk = true; btn.disabled = false;
+  if (norm(val)===norm(correct)) {
+    fb.textContent='🎉 Parfait !'; fb.style.color='#10b981'; codeOk=true; btn.disabled=false;
   } else {
-    fb.textContent = val.length>2 ? '❌ Pas encore !' : ''; fb.style.color='#ef4444';
-    codeOk = false; btn.disabled = true;
+    fb.textContent=val.length>2?'❌ Pas encore !':''; fb.style.color='#ef4444'; codeOk=false; btn.disabled=true;
   }
 }
 
 function captureZone() {
-  if (!codeOk || !activeZone) return;
+  if (!codeOk||!activeZone) return;
   const btn = document.getElementById('ch-btn');
-  btn.textContent = '⏳ Capture...'; btn.disabled = true;
+  btn.textContent='⏳...'; btn.disabled=true;
   setTimeout(() => {
     zoneStates[activeZone.id] = selectedTeam;
-    refreshMarker(activeZone);
     updateScores();
     showNotif('✅ '+activeZone.name+' capturée ! +'+activeZone.points+' pts','#10b981');
-    codeOk = false;
-    showMapScreen();
+    codeOk=false;
+    showScreen('main-screen');
+    renderZones();
   }, 800);
 }
 
 // ============================================================
-// SCORES
+// SCORES EN TEMPS RÉEL
 // ============================================================
-function getScore(team) { return ZONES.filter(z=>zoneStates[z.id]===team).reduce((a,z)=>a+z.points,0); }
-
 function updateScores() {
-  TEAMS.forEach(t => document.getElementById('score-'+t.id).textContent = getScore(t.id));
-}
-
-function refreshScores() {
   TEAMS.forEach(t => {
-    const captured = ZONES.filter(z=>zoneStates[z.id]===t.id);
-    document.getElementById('total-'+t.id).textContent = captured.reduce((a,z)=>a+z.points,0)+' pts';
-    document.getElementById('zones-'+t.id).innerHTML = captured.length===0
-      ? '<div class="no-zones">Aucune zone capturée</div>'
-      : captured.map(z=>`<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span style="color:${t.color};font-weight:800">+${z.points}</span></div>`).join('');
+    const captured = ZONES.filter(z => zoneStates[z.id] === t.id);
+    const score = captured.reduce((a,z)=>a+z.points,0);
+    document.getElementById('score-'+t.id).textContent = score;
+    document.getElementById('zones-count-'+t.id).textContent = captured.length+(captured.length<=1?' zone':' zones');
   });
-  const free = ZONES.filter(z=>!zoneStates[z.id]);
-  document.getElementById('zones-free').innerHTML = free.length===0
-    ? '<div class="no-zones" style="color:var(--green)">Toutes capturées ! 🎉</div>'
-    : free.map(z=>`<div class="score-zone-row"><span>${z.emoji} ${z.name}</span><span>${z.points} pts</span></div>`).join('');
 }
 
 // ============================================================
@@ -645,12 +589,14 @@ function startTimer() {
     const m = String(Math.floor(timerSec/60)).padStart(2,'0');
     const s = String(timerSec%60).padStart(2,'0');
     document.getElementById('timer').textContent = `⏱ ${m}:${s}`;
+    // Rafraîchit les scores toutes les secondes automatiquement
+    updateScores();
     if (timerSec<=0) { clearInterval(timerInterval); endGame(); }
   },1000);
 }
 
 function endGame() {
-  const scores = TEAMS.map(t=>({...t,score:getScore(t.id)})).sort((a,b)=>b.score-a.score);
+  const scores = TEAMS.map(t=>({...t,score:ZONES.filter(z=>zoneStates[z.id]===t.id).reduce((a,z)=>a+z.points,0)})).sort((a,b)=>b.score-a.score);
   showNotif(`🏆 ${scores[0].emoji} gagne avec ${scores[0].score} pts !`,'#f59e0b');
 }
 

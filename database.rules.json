@@ -1,0 +1,93 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "parties": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.child('createur').val() === auth.uid) || data.child('createur').val() === auth.uid)",
+        ".validate": "$code.matches(/^[0-9]{6}$/) && newData.hasChildren(['jeu', 'etat', 'createur'])",
+
+        "jeu": { ".validate": "newData.isString() && newData.val().length <= 40" },
+        "createur": { ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())" },
+        "creeLe": { ".validate": "newData.isNumber()" },
+        "debut": { ".validate": "newData.isNumber()" },
+        "regles": {
+          "$cle": { ".validate": "newData.isNumber() || newData.isBoolean() || newData.isString()" }
+        },
+
+        "etat": {
+          ".write": "auth != null && data.val() === 'en_cours' && newData.val() === 'fini' && (data.parent().child('joueurs/' + auth.uid + '/role').val() === 'fugitif' || now > data.parent().child('debut').val() + (data.parent().child('regles/avance').val() + data.parent().child('regles/duree').val()) * 1000)",
+          ".validate": "newData.val() === 'lobby' || newData.val() === 'en_cours' || newData.val() === 'fini'"
+        },
+
+        "resultat": {
+          ".write": "auth != null && !data.exists() && data.parent().child('etat').val() === 'en_cours' && ((data.parent().child('joueurs/' + auth.uid + '/role').val() === 'fugitif' && newData.child('gagnant').val() === 'chasseurs') || (now > data.parent().child('debut').val() + (data.parent().child('regles/avance').val() + data.parent().child('regles/duree').val()) * 1000 && newData.child('raison').val() === 'temps'))",
+          ".validate": "newData.hasChildren(['gagnant', 'raison'])",
+          "gagnant": { ".validate": "newData.isString() && newData.val().length <= 20" },
+          "raison": { ".validate": "newData.isString() && newData.val().length <= 20" },
+          "par": { ".validate": "newData.isString()" },
+          "distance": { ".validate": "newData.isNumber()" },
+          "t": { ".validate": "newData.isNumber()" },
+          "$autre": { ".validate": false }
+        },
+
+        "joueurs": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid",
+            ".validate": "newData.hasChildren(['pseudo'])",
+            "pseudo": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20" },
+            "role": { ".validate": "newData.isString() && (newData.parent().parent().parent().child('createur').val() === auth.uid || newData.val() === data.val())" },
+            "rejoint": { ".validate": "newData.isNumber()" },
+            "$autre": { ".validate": false }
+          }
+        },
+
+        "positions": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('parties/' + $code + '/joueurs/' + $uid).exists()",
+            ".validate": "newData.hasChildren(['lat', 'lon', 'maj'])",
+            "lat": { ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90" },
+            "lon": { ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180" },
+            "precision": { ".validate": "newData.isNumber()" },
+            "maj": { ".validate": "newData.isNumber() && newData.val() <= now + 60000" },
+            "$autre": { ".validate": false }
+          }
+        },
+
+        "captures": {
+          "$uid": {
+            ".write": "auth != null && root.child('parties/' + $code + '/etat').val() === 'en_cours' && (auth.uid === $uid || root.child('parties/' + $code + '/joueurs/' + auth.uid + '/role').val() === 'fugitif')",
+            "lat": { ".validate": "newData.isNumber()" },
+            "lon": { ".validate": "newData.isNumber()" },
+            "precision": { ".validate": "newData.isNumber()" },
+            "t": { ".validate": "newData.isNumber()" },
+            "reponse": {
+              ".validate": "root.child('parties/' + $code + '/joueurs/' + auth.uid + '/role').val() === 'fugitif' || root.child('parties/' + $code + '/createur').val() === auth.uid"
+            },
+            "$autre": { ".validate": false }
+          }
+        },
+
+        "$autre": { ".validate": false }
+      }
+    },
+
+    "prive": {
+      "$code": {
+        ".write": "auth != null && root.child('parties/' + $code + '/createur').val() === auth.uid && !newData.exists()",
+        "$uid": {
+          ".read": "auth != null && (auth.uid === $uid || root.child('parties/' + $code + '/joueurs/' + auth.uid + '/role').val() === 'arbitre')",
+          ".write": "auth != null && auth.uid === $uid",
+          ".validate": "newData.hasChildren(['lat', 'lon', 'maj'])",
+          "lat": { ".validate": "newData.isNumber() && newData.val() >= -90 && newData.val() <= 90" },
+          "lon": { ".validate": "newData.isNumber() && newData.val() >= -180 && newData.val() <= 180" },
+          "precision": { ".validate": "newData.isNumber()" },
+          "maj": { ".validate": "newData.isNumber()" },
+          "$autre": { ".validate": false }
+        }
+      }
+    }
+  }
+}
